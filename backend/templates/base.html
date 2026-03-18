@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Asset Management System{% endblock %}</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    {% if session.get('user_id') %}
+        <!-- No top navbar for logged-in users, as they will use a sidebar -->
+    {% else %}
+        <nav class="navbar">
+            <div class="logo">
+                <a href="/"><i class="fas fa-qrcode"></i> AssetMS</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/#features">Features</a></li>
+                <li><a href="/#how-it-works">How It Works</a></li>
+                <li><a href="/free-qr">Free QR Tool</a></li>
+                <li><a href="/login" class="btn-nav-outline">Login</a></li> 
+                <li><a href="/register" class="btn-primary">Get Started Free</a></li>
+            </ul>
+        </nav>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    {% if not session.get('user_id') %}
+        <!-- FOOTER -->
+        <footer class="footer">
+            <p>© 2025 AssetMS | Developed by Rasha Febin</p>
+        </footer>
+    {% endif %}
+
+</body>
+</html>

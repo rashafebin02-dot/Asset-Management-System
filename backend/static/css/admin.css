@@ -1,0 +1,258 @@
+.admin-dashboard-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #f0f4ff;
+}
+
+.admin-top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 1.8rem;
+    color: #3b82f6;
+    font-weight: 700;
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-box input {
+    padding: 0.8rem 1rem 0.8rem 3rem;
+    border: 1px solid #d1d5db;
+    border-radius: 2rem;
+    width: 350px;
+}
+
+.search-box i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+}
+
+.header-user {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.notification-bell, .message-icon {
+    font-size: 1.3rem;
+    color: #64748b;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #1e3a8a;
+}
+
+.admin-main-layout {
+    display: flex;
+    flex: 1;
+}
+
+.admin-sidebar {
+    width: 280px;
+    background: white;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    padding: 2rem 0;
+}
+
+.sidebar-menu li {
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #64748b;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.sidebar-menu li.active {
+    background: #3b82f6;
+    color: white;
+}
+
+.sidebar-menu li:hover {
+    background: #eff6ff;
+}
+
+.admin-content-area {
+    flex: 1;
+    padding: 2rem;
+}
+
+.dashboard-title {
+    font-size: 2rem;
+    color: #1e3a8a;
+    margin-bottom: 2rem;
+}
+
+.kpi-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.kpi-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.kpi-icon {
+    font-size: 2.5rem;
+    color: #3b82f6;
+}
+
+.kpi-text p {
+    color: #64748b;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-text h2 {
+    font-size: 2rem;
+    color: #1e293b;
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.widget-card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    padding: 1.5rem;
+}
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.add-btn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 2rem;
+    cursor: pointer;
+}
+
+.data-table th, .data-table td {
+    padding: 1rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.action-icons i {
+    cursor: pointer;
+    color: #64748b;
+    margin-right: 1rem;
+}
+
+.qr-illustration {
+    width: 100%;
+    border-radius: 1rem;
+}
+
+.feedback-list .feedback-entry {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.feedback-content p {
+    color: #4b5563;
+    margin: 0.5rem 0;
+}
+
+.resolve-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    margin-right: 0.5rem;
+}
+
+.reply-btn {
+    background: #e5e7eb;
+    color: #374151;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+}
+
+.report-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.report-btn {
+    background: #f3f4f6;
+    border: none;
+    padding: 1rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    color: #374151;
+    font-weight: 600;
+}
+
+.expired-chart {
+    width: 100%;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+}
+
+.expired-items .expired-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.expired-badge {
+    background: #ef4444;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+}

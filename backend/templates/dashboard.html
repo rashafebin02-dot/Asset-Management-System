@@ -1,0 +1,1123 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | AssetMS{% endblock %}
+
+{% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+    /* Dashboard specific styles */
+    :root {
+        --primary-color: #4f46e5; /* Indigo 600 */
+        --primary-hover: #4338ca; /* Indigo 700 */
+        --sidebar-bg: #0f172a; /* Slate 900 */
+        --sidebar-text: #94a3b8; /* Slate 400 */
+        --sidebar-active: #ffffff;
+        --bg-color: #f1f5f9; /* Slate 100 */
+        --card-bg: #ffffff;
+        --text-main: #1e293b; /* Slate 800 */
+        --text-muted: #64748b; /* Slate 500 */
+        --border-color: #e2e8f0; /* Slate 200 */
+        --danger: #ef4444;
+        --success: #10b981;
+    }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg-color);
+        font-family: 'Poppins', sans-serif;
+        color: var(--text-main);
+    }
+
+    .admin-dashboard {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    /* Header */
+    .admin-header {
+        background: var(--card-bg);
+        height: 70px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 30px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        z-index: 20;
+        position: relative;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+    }
+    
+    .logo-area {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        color: var(--primary-color);
+        font-size: 1.4rem;
+        letter-spacing: -0.5px;
+    }
+
+    .search-box {
+        background: #f8fafc;
+        padding: 10px 20px;
+        border-radius: 99px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-muted);
+        border: 1px solid var(--border-color);
+        transition: all 0.2s;
+        width: 300px;
+    }
+    
+    .search-box:focus-within {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    
+    .search-box input {
+        border: none;
+        background: transparent;
+        outline: none;
+        color: var(--text-main);
+        width: 100%;
+        font-size: 0.95rem;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        color: var(--text-muted);
+    }
+    
+    .icon-btn {
+        cursor: pointer;
+        transition: color 0.2s;
+        font-size: 1.1rem;
+    }
+    
+    .icon-btn:hover {
+        color: var(--primary-color);
+    }
+
+    .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 8px;
+        transition: background 0.2s;
+    }
+    
+    .user-profile:hover {
+        background: #f8fafc;
+    }
+
+    /* Layout */
+    .admin-layout {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    /* Sidebar */
+    .admin-sidebar {
+        width: 260px;
+        background: var(--sidebar-bg);
+        color: var(--sidebar-text);
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #1e293b;
+    }
+
+    .sidebar-menu {
+        list-style: none;
+        padding: 20px 15px;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .sidebar-menu li {
+        padding: 14px 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: all 0.2s;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .sidebar-menu li:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--sidebar-active);
+    }
+
+    .sidebar-menu li.active {
+        background: var(--primary-color);
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+    }
+    
+    .sidebar-menu li i {
+        width: 20px;
+        text-align: center;
+    }
+
+    /* Main Content */
+    .main-area {
+        flex: 1;
+        padding: 40px;
+        overflow-y: auto;
+        background: var(--bg-color);
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 35px;
+    }
+
+    .page-title {
+        margin: 0;
+        color: var(--text-main);
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    /* KPI Cards */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+
+    .kpi-card {
+        background: white;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .kpi-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    
+    .kpi-icon.blue { background: #eff6ff; color: #3b82f6; }
+    .kpi-icon.purple { background: #f5f3ff; color: #8b5cf6; }
+    .kpi-icon.orange { background: #fff7ed; color: #f97316; }
+    .kpi-icon.red { background: #fef2f2; color: #ef4444; }
+
+    .kpi-info p {
+        margin: 0 0 5px 0;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .kpi-info h2 {
+        margin: 0;
+        color: var(--text-main);
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    /* Content Grid */
+    .content-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 25px;
+    }
+
+    .card {
+        background: white;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border-color);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .card h3 {
+        margin: 0;
+        color: var(--text-main);
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    /* Tables */
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table th {
+        text-align: left;
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 12px 15px;
+        background: #f8fafc;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .table th:first-child { border-top-left-radius: 8px; }
+    .table th:last-child { border-top-right-radius: 8px; }
+
+    .table td {
+        padding: 16px 15px;
+        color: var(--text-main);
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.95rem;
+    }
+    
+    .table tr:last-child td { border-bottom: none; }
+    
+    .table tr:hover td {
+        background-color: #f8fafc;
+    }
+
+    .table i {
+        margin-right: 10px;
+        color: var(--text-muted);
+    }
+
+    /* Forms */
+    .inline-form {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .form-input {
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        outline: none;
+        font-family: inherit;
+        font-size: 0.9rem;
+        transition: border-color 0.2s;
+    }
+    
+    .form-input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+    }
+
+    /* Feedback & Expired Lists */
+    .feedback-list, .expired-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .feedback-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        padding: 15px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .feedback-item:last-child { border-bottom: none; }
+    
+    .avatar-circle {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: 600;
+        font-size: 1.1rem;
+        box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+    }
+    
+    .feedback-content strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--text-main);
+    }
+    
+    .feedback-content p {
+        margin: 0 0 8px 0;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .expired-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .expired-item:last-child { border-bottom: none; }
+
+    .expired-badge {
+        background: #fef2f2;
+        color: #ef4444;
+        padding: 4px 10px;
+        border-radius: 99px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: 1px solid #fee2e2;
+    }
+
+    /* Buttons */
+    .btn-primary, .add-btn {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+    
+    .add-btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-primary:hover, .add-btn:hover {
+        background: var(--primary-hover);
+    }
+    
+    .resolve-btn {
+        display: inline-block;
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        background: #fee2e2;
+        color: #ef4444;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    
+    .resolve-btn:hover {
+        background: #fecaca;
+    }
+    
+    .report-grid {
+        display: grid;
+        gap: 15px;
+    }
+    
+    .report-btn {
+        background: white;
+        color: var(--text-main);
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .report-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background: #f8fafc;
+    }
+    
+    .view-all {
+        font-size: 0.85rem;
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .view-all:hover {
+        text-decoration: underline;
+    }
+    
+    /* Flash Messages */
+    .flash-message {
+        padding: 15px;
+        margin-bottom: 25px;
+        border-radius: 8px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    .flash-message.success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .flash-message.error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    
+    /* QR Code Styles for Admin Report */
+    .qr-code-target img, .qr-code-target canvas {
+        width: 160px;
+        height: 160px;
+        image-rendering: pixelated;
+    }
+    
+    .qr-letter-input {
+        width: 30px;
+        text-align: center;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        padding: 4px;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+    
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        padding: 6px 12px;
+    }
+    
+    .btn-secondary:hover {
+        background: #475569;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+<div class="admin-dashboard">
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="header-left">
+            <div class="logo-area">
+                <i class="fas fa-qrcode"></i>
+                <span>AssetMS</span>
+            </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search">
+            </div>
+        </div>
+        <div class="header-right">
+            <i class="fas fa-bell icon-btn"></i>
+            <i class="fas fa-envelope icon-btn"></i>
+            <div class="user-profile">
+                <span>Admin</span>
+                <i class="fas fa-caret-down"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <ul class="sidebar-menu">
+                <li class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</li>
+                <li onclick="document.getElementById('categories-section').scrollIntoView({behavior: 'smooth'})"><i class="fas fa-boxes"></i> Manage Assets</li>
+                <li onclick="document.getElementById('qr-report-section').scrollIntoView({behavior: 'smooth'})"><i class="fas fa-qrcode"></i> QR Report</li>
+                <li onclick="document.getElementById('reports-section').scrollIntoView({behavior: 'smooth'})"><i class="fas fa-chart-bar"></i> Reports</li>
+                <li onclick="document.getElementById('feedbacks-section').scrollIntoView({behavior: 'smooth'})"><i class="fas fa-comments"></i> User Feedbacks</li>
+                <li onclick="document.getElementById('expired-section').scrollIntoView({behavior: 'smooth'})"><i class="fas fa-exclamation-triangle"></i> Expired Assets</li>
+                <li onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Logout</li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-area">
+            <div class="page-header">
+                <h1 class="page-title">Admin Dashboard</h1>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon blue"><i class="fas fa-boxes"></i></div>
+                    <div class="kpi-info">
+                        <p>Total Assets</p>
+                        <h2>{{ total_assets }}</h2>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon purple"><i class="fas fa-tags"></i></div>
+                    <div class="kpi-info">
+                        <p>Categories Managed</p>
+                        <h2>{{ total_categories }}</h2>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon orange"><i class="fas fa-comments"></i></div>
+                    <div class="kpi-info">
+                        <p>User Feedbacks</p>
+                        <h2>{{ pending_requests }}</h2>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon red"><i class="fas fa-shield-alt"></i></div>
+                    <div class="kpi-info">
+                        <p>Expired Assets</p>
+                        <h2>{{ expired_assets_count }}</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="card" id="categories-section">
+                    <div class="card-header">
+                        <h3>Asset Categories</h3>
+                        <form action="/admin/add-category" method="POST" class="inline-form">
+                            <input type="text" name="category_name" placeholder="New Category" required class="form-input">
+                            <button type="submit" class="add-btn">+ Add</button>
+                        </form>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Total Assets</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat in categories %}
+                            <tr>
+                                <td><i class="fas fa-folder"></i> {{ cat.Category_name }}</td>
+                                <td>{{ cat.asset_count }}</td>
+                                <td>
+                                    <a href="/admin/delete-category/{{ cat.Category_id }}" onclick="return confirm('Are you sure?')" style="color: #ef4444;"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="3">No categories found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card" id="qr-report-section">
+                    <div class="card-header">
+                        <h3>All Generated QR Codes</h3>
+                        <button class="btn-primary" onclick="openPrintModal(null, 'multiple')" style="font-size: 0.85rem; padding: 6px 12px;"><i class="fas fa-print"></i> Print Selected</button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
+                                    <th>Asset Details</th>
+                                    <th>Category</th>
+                                    <th style="text-align: center;">QR Code</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for asset in all_assets %}
+                                <tr>
+                                    <td><input type="checkbox" class="qr-checkbox"></td>
+                                    <td>
+                                        <div style="font-weight: 600; color: #334155;">{{ asset.Product_name }}</div>
+                                        <div style="font-size: 0.8rem; color: #64748b; font-family: monospace;">{{ asset.Qr_code_value }}</div>
+                                    </td>
+                                    <td>{{ asset.Category_name }}</td>
+                                    <td style="text-align: center;">
+                                        <div class="qr-code-target" id="admin-qr-{{ loop.index }}" data-qr="ID:{{ asset.Qr_code_value|string|replace('"', '') }}&#10;Item:{{ asset.Product_name|string|replace('"', '')|truncate(18, True, '') }}&#10;Cat:{{ asset.Category_name|string|replace('"', '')|truncate(12, True, '') }}{% if asset.Manufacturer %}&#10;Mfr:{{ asset.Manufacturer|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Vendor %}&#10;Vdr:{{ asset.Vendor|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Price %}&#10;Price:{{ asset.Price }}{% endif %}{% if asset.Bill_no %}&#10;Bill:{{ asset.Bill_no|string|replace('"', '')|truncate(8, True, '') }}{% endif %}{% if asset.Purchase_date %}&#10;Buy:{{ asset.Purchase_date }}{% endif %}&#10;Exp:{{ asset.expiry_date }}{% if asset.Warranty_period %}&#10;War:{{ asset.Warranty_period|string|replace('"', '')|truncate(8, True, '') }}{% endif %}{% if asset.custodian %}&#10;Cust:{{ asset.custodian|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Department %}&#10;Dept:{{ asset.Department|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Location %}&#10;Loc:{{ asset.Location|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Stock_register_no %}&#10;Reg:{{ asset.Stock_register_no|string|replace('"', '')|truncate(8, True, '') }}{% endif %}" style="margin-bottom: 5px;"></div>
+                                        <div style="display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
+                                            <label style="cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 4px; padding: 4px 8px; background: #e2e8f0; border-radius: 4px; color: #475569;" title="Standard QR Code">
+                                                <input type="checkbox" onchange="toggleNormalQR(this, 'admin-qr-{{ loop.index }}')" style="margin: 0;">
+                                                <span>Normal</span>
+                                            </label>
+                                            
+                                            <input type="text" value="{{ asset.Category_name[0]|upper if asset.Category_name else 'A' }}" maxlength="1" placeholder="A-Z"
+                                                   class="qr-letter-input"
+                                                   oninput="updateQRLetter(this, 'admin-qr-{{ loop.index }}')" title="Type a letter to show in center">
+                                            
+                                            <label style="cursor: pointer; padding: 4px 8px; background: #e2e8f0; border-radius: 4px; color: #475569; display: flex; align-items: center;" title="Upload Custom Logo/Image">
+                                                <i class="fas fa-image"></i>
+                                                <input type="file" accept="image/*" style="display: none;" onchange="updateQRImage(this, 'admin-qr-{{ loop.index }}')">
+                                            </label>
+
+                                            <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.70rem;" onclick="openPrintModal(this, 'single')"><i class="fas fa-print"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="4" style="text-align: center; padding: 20px;">No assets added yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card" id="feedbacks-section">
+                    <div class="card-header">
+                        <h3>Recent User Feedbacks</h3>
+                        <a href="#" class="view-all">View All ></a>
+                    </div>
+                    <div class="feedback-list">
+                        {% for fb in feedbacks %}
+                        <div class="feedback-item">
+                            <div class="avatar-circle">
+                                {{ fb.User_name[0] | upper }}
+                            </div>
+                            <div class="feedback-content">
+                                <strong>{{ fb.User_name }}</strong>
+                                <p>{{ fb.message }}</p>
+                                <a href="/admin/delete-feedback/{{ fb.feedback_id }}" class="resolve-btn">Delete</a>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p style="padding: 1rem; color: #666;">No pending feedback.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="card" id="reports-section">
+                    <h3>Asset & User Reports</h3>
+                    <div class="report-grid">
+                        <a href="/admin/export-report" class="report-btn"><i class="fas fa-file-excel"></i> Export All Assets</a>
+                        <a href="/admin/export-user-report" class="report-btn"><i class="fas fa-users"></i> Export User List</a>
+                    </div>
+                </div>
+
+                <div class="card" id="expired-section">
+                    <h3>Expired Assets</h3>
+                    <div class="expired-list">
+                        {% for asset in expired_assets %}
+                        <div class="expired-item">
+                            <span>{{ asset.Product_name }}</span>
+                            <span class="expired-badge">Expired</span>
+                            <small>{{ asset.expiry_date }}</small>
+                        </div>
+                        {% else %}
+                        <p style="padding: 1rem; color: #666;">No expired assets.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Print Size Modal -->
+<div id="printSizeModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
+    <div style="background:white;padding:25px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);max-width:400px;width:90%;">
+        <h3 style="margin:0 0 15px 0;color:#1e293b;display:flex;align-items:center;gap:10px;">
+            <i class="fas fa-ruler-combined" style="color:var(--primary-color)"></i> Print Size Settings
+        </h3>
+        <p style="color:#64748b;font-size:0.9rem;margin-bottom:15px;">Customize the QR code dimensions for printing</p>
+        
+        <div style="display:flex;gap:15px;align-items:center;margin-bottom:15px;">
+            <label style="flex:1;">
+                <span style="font-size:0.85rem;color:#475569;display:block;margin-bottom:4px;">Width (cm)</span>
+                <input type="number" id="modalPrintWidth" value="5" min="1" max="30" step="0.5" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:6px;font-size:1rem;box-sizing:border-box;">
+            </label>
+            <button onclick="syncModalSize()" style="margin-top:20px;padding:10px;background:#e2e8f0;border:none;border-radius:6px;cursor:pointer;" title="Sync dimensions">
+                <i class="fas fa-link"></i>
+            </button>
+            <label style="flex:1;">
+                <span style="font-size:0.85rem;color:#475569;display:block;margin-bottom:4px;">Height (cm)</span>
+                <input type="number" id="modalPrintHeight" value="5" min="1" max="30" step="0.5" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:6px;font-size:1rem;box-sizing:border-box;">
+            </label>
+        </div>
+        
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+            <button onclick="setPresetSize(3, 3)" class="btn-secondary" style="flex:1;padding:8px;">Small (3cm)</button>
+            <button onclick="setPresetSize(5, 5)" class="btn-secondary" style="flex:1;padding:8px;">Medium (5cm)</button>
+            <button onclick="setPresetSize(8, 8)" class="btn-secondary" style="flex:1;padding:8px;">Large (8cm)</button>
+        </div>
+        
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+            <button onclick="closePrintModal()" class="btn-secondary" style="padding:10px 20px;">Cancel</button>
+            <button onclick="confirmPrint()" class="btn-primary" style="padding:10px 20px;"><i class="fas fa-print"></i> Print</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var qrContainers = document.querySelectorAll('.qr-code-target');
+        qrContainers.forEach(function(container) {
+            var input = container.parentElement.querySelector('.qr-letter-input');
+            var letter = input ? input.value : 'A';
+            generateQR(container, letter);
+        });
+    });
+
+    function updateQRLetter(input, containerId) {
+        var container = document.getElementById(containerId);
+        container.removeAttribute('data-custom-img');
+        container.removeAttribute('data-normal-qr');
+        var letter = input.value.toUpperCase() || 'A';
+        generateQR(container, letter);
+    }
+
+    function updateQRImage(input, containerId) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var container = document.getElementById(containerId);
+                container.setAttribute('data-custom-img', e.target.result);
+                container.removeAttribute('data-normal-qr');
+                generateQR(container);
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function toggleNormalQR(checkbox, containerId) {
+        var container = document.getElementById(containerId);
+        if (checkbox.checked) {
+            container.setAttribute('data-normal-qr', 'true');
+            container.removeAttribute('data-custom-img');
+        } else {
+            container.removeAttribute('data-normal-qr');
+        }
+        generateQR(container);
+    }
+
+    function generateQR(container, letterOverride = null) {
+        var qrText = container.getAttribute('data-qr');
+        var customImgSrc = container.getAttribute('data-custom-img');
+        var normalQRMode = container.getAttribute('data-normal-qr') === 'true';
+        
+        let letter = letterOverride;
+        if (!letter && !customImgSrc && !normalQRMode) {
+            const input = container.parentElement.querySelector('.qr-letter-input');
+            letter = input ? input.value.toUpperCase() : 'A';
+        }
+
+        container.innerHTML = ""; 
+        
+        if (!qrText) return;
+        if (typeof QRCode === 'undefined') {
+            container.innerHTML = "Lib Error";
+            return;
+        }
+
+        const tempDiv = document.createElement('div');
+        tempDiv.style.width = '400px';
+        tempDiv.style.height = '400px';
+        document.body.appendChild(tempDiv);
+        
+        try {
+            new QRCode(tempDiv, {
+                text: qrText,
+                width: 400,
+                height: 400,
+                colorDark : "#1e293b",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            let attempts = 0;
+            const checkQRGeneration = () => {
+                const qrCanvas = tempDiv.querySelector('canvas');
+                const qrImg = tempDiv.querySelector('img');
+                
+                if ((qrCanvas || qrImg) && ((qrCanvas && qrCanvas.width > 0) || (qrImg && qrImg.width > 0 && qrImg.height > 0))) {
+                    if (normalQRMode) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 400;
+                        canvas.height = 400;
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillRect(0, 0, 400, 400);
+                        if (qrCanvas) ctx.drawImage(qrCanvas, 0, 0, 400, 400);
+                        else ctx.drawImage(qrImg, 0, 0, 400, 400);
+                        container.appendChild(canvas);
+                        if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                        return;
+                    }
+
+                    if (customImgSrc) {
+                        const imgObj = new Image();
+                        imgObj.onerror = function() {
+                            console.error('Failed to load image');
+                            if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                        };
+                        imgObj.onload = function() {
+                            const finalCanvas = document.createElement('canvas');
+                            finalCanvas.width = 400;
+                            finalCanvas.height = 400;
+                            const finalCtx = finalCanvas.getContext('2d');
+                            
+                            finalCtx.fillStyle = '#FFFFFF';
+                            finalCtx.fillRect(0, 0, 400, 400);
+                            
+                            if (qrCanvas) finalCtx.drawImage(qrCanvas, 0, 0, 400, 400);
+                            else finalCtx.drawImage(qrImg, 0, 0, 400, 400);
+                            
+                            const logoBoxSize = 140;
+                            const logoBoxX = (400 - logoBoxSize) / 2;
+                            const logoBoxY = (400 - logoBoxSize) / 2;
+                            
+                            finalCtx.fillStyle = 'rgba(255, 255, 255, 1.0)';
+                            finalCtx.fillRect(logoBoxX, logoBoxY, logoBoxSize, logoBoxSize);
+                            
+                            const hRatio = logoBoxSize / imgObj.width;
+                            const vRatio = logoBoxSize / imgObj.height;
+                            const ratio = Math.min(hRatio, vRatio);
+                            const imgWidth = imgObj.width * ratio;
+                            const imgHeight = imgObj.height * ratio;
+                            const imgX = logoBoxX + (logoBoxSize - imgWidth) / 2;
+                            const imgY = logoBoxY + (logoBoxSize - imgHeight) / 2;
+                            
+                            finalCtx.imageSmoothingEnabled = true;
+                            finalCtx.imageSmoothingQuality = 'high';
+                            finalCtx.drawImage(imgObj, imgX, imgY, imgWidth, imgHeight);
+                            
+                            const finderSize = 100;
+                            const source = qrCanvas || qrImg;
+                            finalCtx.drawImage(source, 0, 0, finderSize, finderSize, 0, 0, finderSize, finderSize);
+                            finalCtx.drawImage(source, 400 - finderSize, 0, finderSize, finderSize, 400 - finderSize, 0, finderSize, finderSize);
+                            finalCtx.drawImage(source, 0, 400 - finderSize, finderSize, finderSize, 0, 400 - finderSize, finderSize, finderSize);
+                            
+                            container.appendChild(finalCanvas);
+                            if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                        };
+                        imgObj.src = customImgSrc;
+                        return;
+                    }
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 400;
+                    canvas.height = 400;
+                    const ctx = canvas.getContext('2d');
+                    
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, 400, 400);
+                    if (qrCanvas) ctx.drawImage(qrCanvas, 0, 0, 400, 400);
+                    else ctx.drawImage(qrImg, 0, 0, 400, 400);
+
+                    const maskCanvas = document.createElement('canvas');
+                    maskCanvas.width = 400;
+                    maskCanvas.height = 400;
+                    const mCtx = maskCanvas.getContext('2d');
+
+                    mCtx.fillStyle = 'rgba(255, 255, 255, 0.78)'; 
+                    mCtx.fillRect(0, 0, 400, 400);
+
+                    mCtx.globalCompositeOperation = 'destination-out';
+
+                    const fontSize = 296;
+                    mCtx.font = '900 ' + fontSize + 'px Arial, sans-serif'; 
+                    mCtx.textAlign = 'center';
+                    mCtx.textBaseline = 'middle';
+                    mCtx.fillText(letter, 200, 216);
+                    
+                    mCtx.globalCompositeOperation = 'source-over';
+
+                    function combineLayers() {
+                        ctx.clearRect(0, 0, 400, 400);
+                        if (qrCanvas) ctx.drawImage(qrCanvas, 0, 0, 400, 400);
+                        else ctx.drawImage(qrImg, 0, 0, 400, 400);
+
+                        ctx.drawImage(maskCanvas, 0, 0);
+
+                        ctx.font = '900 ' + fontSize + 'px Arial, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.lineWidth = Math.max(6, 5);
+                        ctx.strokeStyle = 'rgba(15, 23, 42, 0.95)';
+                        ctx.strokeText(letter, 200, 216);
+
+                        const finderSize = 100; 
+                        const source = qrCanvas || qrImg;
+
+                        ctx.drawImage(source, 0, 0, finderSize, finderSize, 0, 0, finderSize, finderSize);
+                        ctx.drawImage(source, 400 - finderSize, 0, finderSize, finderSize, 400 - finderSize, 0, finderSize, finderSize);
+                        ctx.drawImage(source, 0, 400 - finderSize, finderSize, finderSize, 0, 400 - finderSize, finderSize, finderSize);
+                            
+                        container.appendChild(canvas);
+                        if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                    }
+
+                    combineLayers();
+
+                } else if (attempts < 20) {
+                    attempts++;
+                    setTimeout(checkQRGeneration, 100);
+                } else {
+                    container.innerHTML = "<span style='font-size:12px; color:#666;'>Generating...</span>";
+                    if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                }
+            };
+
+            checkQRGeneration();
+        } catch (error) {
+            console.error('QR generation error:', error);
+            container.innerHTML = "<span style='font-size:10px; color:red;'>Error</span>";
+            if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+        }
+    }
+
+    function toggleSelectAll(source) {
+        const checkboxes = document.querySelectorAll('.qr-checkbox');
+        checkboxes.forEach(cb => cb.checked = source.checked);
+    }
+
+    // Print Modal Variables
+    var currentPrintBtn = null;
+    var currentPrintMode = 'single';
+
+    function openPrintModal(btn, mode) {
+        currentPrintBtn = btn;
+        currentPrintMode = mode;
+        
+        if (mode === 'multiple') {
+            const checkedBoxes = document.querySelectorAll('.qr-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                alert('Please select at least one asset to print.');
+                return;
+            }
+        }
+        
+        document.getElementById('printSizeModal').style.display = 'flex';
+    }
+
+    function closePrintModal() {
+        document.getElementById('printSizeModal').style.display = 'none';
+        currentPrintBtn = null;
+        currentPrintMode = 'single';
+    }
+
+    function syncModalSize() {
+        var width = document.getElementById('modalPrintWidth').value;
+        document.getElementById('modalPrintHeight').value = width;
+    }
+
+    function setPresetSize(width, height) {
+        document.getElementById('modalPrintWidth').value = width;
+        document.getElementById('modalPrintHeight').value = height;
+    }
+
+    function confirmPrint() {
+        var printWidthCm = parseFloat(document.getElementById('modalPrintWidth').value) || 5;
+        var printHeightCm = parseFloat(document.getElementById('modalPrintHeight').value) || 5;
+        
+        var btn = currentPrintBtn;
+        var mode = currentPrintMode;
+        
+        closePrintModal();
+        
+        if (mode === 'single' && btn) {
+            printQRWithSize(btn, printWidthCm, printHeightCm);
+        } else if (mode === 'multiple') {
+            printSelectedQRsWithSize(printWidthCm, printHeightCm);
+        }
+    }
+
+    function printQRWithSize(btn, printWidthCm, printHeightCm) {
+        var container = btn.closest('td').querySelector('.qr-code-target');
+        var img = container.querySelector('img');
+        var src = "";
+        
+        if (img) {
+            src = img.src;
+        } else {
+            var canvas = container.querySelector('canvas');
+            if (canvas) src = canvas.toDataURL("image/png");
+        }
+        
+        if (src) {
+            var win = window.open('', 'Print QR', 'height=600,width=600');
+            win.document.write('<html><head><title>Print Asset QR</title>');
+            win.document.write('<style>@media print { @page { margin: 1cm; } }</style>');
+            win.document.write('</head><body style="text-align:center; font-family: sans-serif;">');
+            win.document.write('<h3>Asset QR Code</h3>');
+            win.document.write('<img src="' + src + '" style="width:' + printWidthCm + 'cm; height:' + printHeightCm + 'cm; margin-bottom: 20px;">');
+            win.document.write('<p>Scan for details</p>');
+            win.document.write('<script>window.onload = function(){ window.print(); window.close(); }<\/script>');
+            win.document.write('</body></html>');
+            win.document.close();
+        } else {
+            alert('QR Code is still generating or failed to load.');
+        }
+    }
+
+    function printSelectedQRsWithSize(printWidthCm, printHeightCm) {
+        const checkedBoxes = document.querySelectorAll('.qr-checkbox:checked');
+
+        const printWindow = window.open('', 'Print Selected', 'height=800,width=800');
+        printWindow.document.write('<html><head><title>Print Selected QR Codes</title>');
+        printWindow.document.write(`
+            <style>
+                @media print { @page { margin: 1cm; } }
+                body { font-family: sans-serif; }
+                .qr-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+                .qr-item { text-align: center; page-break-inside: avoid; }
+                .qr-item img { width: ${printWidthCm}cm !important; height: ${printHeightCm}cm !important; }
+                .qr-item p { font-weight: bold; margin: 5px 0 0 0; font-size: 12px; word-wrap: break-word; }
+            </style>
+        `);
+        printWindow.document.write('</head><body><h2>Asset QR Report</h2><div class="qr-grid">');
+
+        checkedBoxes.forEach(cb => {
+            const row = cb.closest('tr');
+            const container = row.querySelector('.qr-code-target');
+            const canvas = container.querySelector('canvas');
+            const nameDiv = row.querySelector('td:nth-child(2) div:first-child');
+            const idDiv = row.querySelector('td:nth-child(2) div:last-child');
+            const name = nameDiv ? nameDiv.textContent : 'Asset';
+            const id = idDiv ? idDiv.textContent : '';
+
+            if (canvas) {
+                printWindow.document.write(`<div class="qr-item"><img src="${canvas.toDataURL()}"><p>${name}</p><small>${id}</small></div>`);
+            }
+        });
+
+        printWindow.document.write('</div></body></html>');
+        printWindow.document.close();
+        printWindow.onload = function() { printWindow.print(); printWindow.close(); };
+    }
+</script>
+{% endblock %}

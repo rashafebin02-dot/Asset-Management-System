@@ -1,0 +1,841 @@
+{% extends "base.html" %}
+{% block title %}User Dashboard | AssetMS{% endblock %}
+
+{% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+    /* Reusing Dashboard styles */
+    :root {
+        --primary-color: #3b82f6;
+        --sidebar-bg: #1e293b;
+        --sidebar-text: #94a3b8;
+        --bg-color: #f1f5f9;
+    }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg-color);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .admin-dashboard {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    .admin-header {
+        background: white;
+        height: 60px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        z-index: 10;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        font-weight: 600;
+        color: var(--primary-color);
+        font-size: 1.2rem;
+    }
+
+    .admin-layout {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .admin-sidebar {
+        width: 250px;
+        background: var(--sidebar-bg);
+        color: var(--sidebar-text);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-menu {
+        list-style: none;
+        padding: 20px 0;
+        margin: 0;
+    }
+
+    .sidebar-menu li {
+        padding: 12px 25px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: 0.3s;
+    }
+
+    .sidebar-menu li:hover, .sidebar-menu li.active {
+        background: #334155;
+        color: white;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .sidebar-menu a {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .main-area {
+        flex: 1;
+        padding: 30px;
+        overflow-y: auto;
+    }
+
+    .page-title {
+        margin-bottom: 25px;
+        color: #1e293b;
+    }
+
+    .content-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .card h3 {
+        margin: 0 0 15px 0;
+        color: #1e293b;
+        font-size: 1.1rem;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table th {
+        text-align: left;
+        color: #475569;
+        font-weight: 600;
+        padding: 12px 15px;
+        background-color: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .table td {
+        padding: 12px 15px;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        padding: 8px 16px;
+    }
+    
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        padding: 6px 12px;
+    }
+
+    /* Ensure QR code images fit nicely in the table even if generated large */
+    .qr-code-target img, .qr-code-target canvas {
+        width: 160px;
+        height: 160px;
+        image-rendering: pixelated; /* Keeps QR sharp on screen */
+    }
+</style>
+
+<div class="admin-dashboard">
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="header-left">
+            <i class="fas fa-qrcode"></i>
+            <span>AssetMS User</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span>Welcome, {{ username }}</span>
+            <a href="/logout" style="color: #ef4444; text-decoration: none;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </header>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <ul class="sidebar-menu">
+                <li class="active" id="nav-add"><a href="#" onclick="showTab('add')"><i class="fas fa-plus-circle"></i> Add Assets</a></li>
+                <li id="nav-list"><a href="#" onclick="showTab('list')"><i class="fas fa-list"></i> My Assets</a></li>
+                <li id="nav-expired"><a href="#" onclick="showTab('expired')"><i class="fas fa-history"></i> Expired Assets</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-area">
+            <h1 class="page-title">User Dashboard</h1>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}" style="padding: 10px; margin-bottom: 15px; border-radius: 5px; background: #e0f2fe; color: #0284c7;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="content-grid">
+                <!-- Add Asset Form -->
+                <div class="card" id="section-add">
+                    <h3>Add New Asset & Generate QR</h3>
+                    <div style="margin-top: 1rem;">
+                        <h4>Manual Entry</h4>
+                        <form action="/add-asset" method="POST" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 1rem;">
+                            <div style="grid-column: span 2;">
+                                <input type="text" name="asset_name" placeholder="Product Name *" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                            </div>
+                            
+                            <div style="grid-column: span 2;">
+                                <select name="category_id" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                                    <option value="" disabled selected>Select Category *</option>
+                                    {% for cat in categories %}
+                                    <option value="{{ cat.Category_id }}">{{ cat.Category_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <input type="text" name="manufacturer" placeholder="Manufacturer" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="vendor" placeholder="Vendor" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            
+                            <input type="number" step="0.01" name="price" placeholder="Price" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="bill_no" placeholder="Bill No" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            
+                            <div>
+                                <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 2px;">Purchase Date</label>
+                                <input type="date" name="purchase_date" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 2px;">Warranty Expiry *</label>
+                                <input type="date" name="expiry_date" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                            </div>
+
+                            <input type="text" name="warranty_period" placeholder="Warranty Period (e.g. 2 Years)" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="custodian" placeholder="Custodian" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="department" placeholder="Department" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="location" placeholder="Location" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="stock_register_no" placeholder="Stock Register No" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <textarea name="description" placeholder="Description / Remarks" rows="1" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                            
+                            <div style="grid-column: span 2;">
+                                <button type="submit" class="btn-primary" style="width: 100%;">Add Asset & Generate QR</button>
+                            </div>
+                        </form>
+                        
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 1.5rem 0;">
+                        
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                            <h4 style="margin-top: 0; color: #1e293b; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-file-excel" style="color: #10b981;"></i> Bulk Upload (Excel)
+                            </h4>
+                            <p style="color: #64748b; margin: 10px 0 15px 0; font-size: 0.95rem;">Upload multiple assets at once using an Excel file. Download the sample file to see the required format.</p>
+                            <form action="/upload-bulk" method="POST" enctype="multipart/form-data" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 250px; display: flex; align-items: center; gap: 10px; background: white; padding: 10px 15px; border: 2px solid #e2e8f0; border-radius: 6px;">
+                                    <i class="fas fa-paperclip" style="color: var(--primary-color);"></i>
+                                    <input type="file" name="file" accept=".xlsx, .xls" required style="flex: 1; border: none; outline: none; font-size: 0.9rem;">
+                                </div>
+                                <button type="submit" class="btn-secondary" style="padding: 10px 20px; white-space: nowrap;">
+                                    <i class="fas fa-cloud-upload-alt"></i> Upload
+                                </button>
+                                <a href="/static/prjct smple.xlsx" download class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; white-space: nowrap;">
+                                    <i class="fas fa-download"></i> Sample File
+                                </a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Asset List -->
+                <div class="card" id="section-list" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3>Asset List</h3>
+                        <button class="btn-primary" onclick="openPrintModal(null, 'multiple')"><i class="fas fa-print"></i> Print Selected</button>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
+                                <th>Asset Details</th>
+                                <th>Category</th>
+                                <th style="text-align: center;">QR Code</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asset in assets %}
+                            <tr>
+                                <td><input type="checkbox" class="qr-checkbox"></td>
+                                <td>
+                                    <div style="font-weight: 600; color: #334155;">{{ asset.Product_name }}</div>
+                                    <div style="font-size: 0.8rem; color: #64748b; font-family: monospace;">{{ asset.Qr_code_value }}</div>
+                                </td>
+                                <td>{{ asset.Category_name }}</td>
+                                <td style="text-align: center;">
+                                    <div class="qr-code-target" id="qr-{{ loop.index }}" data-qr="ID:{{ asset.Qr_code_value|string|replace('"', '') }}&#10;Item:{{ asset.Product_name|string|replace('"', '')|truncate(18, True, '') }}&#10;Cat:{{ asset.Category_name|string|replace('"', '')|truncate(12, True, '') }}{% if asset.Manufacturer %}&#10;Mfr:{{ asset.Manufacturer|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Vendor %}&#10;Vdr:{{ asset.Vendor|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Price %}&#10;Price:{{ asset.Price }}{% endif %}{% if asset.Bill_no %}&#10;Bill:{{ asset.Bill_no|string|replace('"', '')|truncate(8, True, '') }}{% endif %}{% if asset.Purchase_date %}&#10;Buy:{{ asset.Purchase_date }}{% endif %}&#10;Exp:{{ asset.expiry_date }}{% if asset.Warranty_period %}&#10;War:{{ asset.Warranty_period|string|replace('"', '')|truncate(8, True, '') }}{% endif %}{% if asset.custodian %}&#10;Cust:{{ asset.custodian|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Department %}&#10;Dept:{{ asset.Department|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Location %}&#10;Loc:{{ asset.Location|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Stock_register_no %}&#10;Reg:{{ asset.Stock_register_no|string|replace('"', '')|truncate(8, True, '') }}{% endif %}" style="margin-bottom: 5px;"></div>
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
+                                        <label style="cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 4px; padding: 4px 8px; background: #e2e8f0; border-radius: 4px; color: #475569;" title="Standard QR Code">
+                                            <input type="checkbox" onchange="toggleNormalQR(this, 'qr-{{ loop.index }}')" style="margin: 0;">
+                                            <span>Normal</span>
+                                        </label>
+                                        
+                                        <input type="text" value="{{ asset.Category_name[0]|upper if asset.Category_name else 'A' }}" maxlength="1" placeholder="A-Z"
+                                               class="qr-letter-input"
+                                               style="width: 30px; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px; font-weight: bold; color: var(--primary-color);"
+                                               oninput="updateQRLetter(this, 'qr-{{ loop.index }}')" title="Type a letter to show in center">
+                                        
+                                        <label style="cursor: pointer; padding: 4px 8px; background: #e2e8f0; border-radius: 4px; color: #475569; display: flex; align-items: center;" title="Upload Custom Logo/Image">
+                                            <i class="fas fa-image"></i>
+                                            <input type="file" accept="image/*" style="display: none;" onchange="updateQRImage(this, 'qr-{{ loop.index }}')">
+                                        </label>
+
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.70rem;" onclick="openPrintModal(this, 'single')"><i class="fas fa-print"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="4" style="text-align: center; padding: 20px;">No assets added yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Expired Assets Section -->
+                <div class="card" id="section-expired" style="display: none;">
+                    <h3>Expired Assets Status</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Expiry Date</th>
+                                <th>Status</th>
+                                <th>Disposition Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for asset in expired_assets %}
+                        <tr>
+                            <td><strong>{{ asset.Product_name }}</strong></td>
+                            <td>{{ asset.expiry_date }}</td>
+                            <td>
+                                {% if asset.is_sold %}
+                                    <span style="background: #fee2e2; color: #ef4444; padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; border: 1px solid #fecaca;">Sold</span>
+                                {% else %}
+                                    <span style="background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; border: 1px solid #bbf7d0;">Stored</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if asset.is_sold %}
+                                    <div style="font-size: 0.85rem; line-height: 1.5;">
+                                        <div><strong>Buyer:</strong> {{ asset.sold_to }}</div>
+                                        <div><strong>Price:</strong> {{ asset.sale_price }}</div>
+                                        <div><strong>Approved By:</strong> {{ asset.approved_by }}</div>
+                                    </div>
+                                {% else %}
+                                    <div style="font-size: 0.85rem; color: #64748b;">
+                                        <i class="fas fa-warehouse"></i> Stored in {{ asset.storage_location|default('College/Organization') }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" style="text-align: center; padding: 20px; color: #666;">No expired assets found.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Feedback / Report Issue -->
+                <div class="card" id="section-feedback">
+                    <h3>Website Feedback</h3>
+                    <form action="/submit-feedback" method="POST" style="display: grid; gap: 15px;">
+                        <textarea name="message" placeholder="Share your experience or report issues with the website..." rows="3" required style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                        <div>
+                            <button type="submit" class="btn-secondary">Submit Feedback</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Print Size Modal -->
+<div id="printSizeModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
+    <div style="background:white;padding:25px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);max-width:400px;width:90%;">
+        <h3 style="margin:0 0 15px 0;color:#1e293b;display:flex;align-items:center;gap:10px;">
+            <i class="fas fa-ruler-combined" style="color:var(--primary-color)"></i> Print Size Settings
+        </h3>
+        <p style="color:#64748b;font-size:0.9rem;margin-bottom:15px;">Customize the QR code dimensions for printing</p>
+        
+        <div style="display:flex;gap:15px;align-items:center;margin-bottom:15px;">
+            <label style="flex:1;">
+                <span style="font-size:0.85rem;color:#475569;display:block;margin-bottom:4px;">Width (cm)</span>
+                <input type="number" id="modalPrintWidth" value="5" min="1" max="30" step="0.5" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:6px;font-size:1rem;box-sizing:border-box;">
+            </label>
+            <button onclick="syncModalSize()" style="margin-top:20px;padding:10px;background:#e2e8f0;border:none;border-radius:6px;cursor:pointer;" title="Sync dimensions">
+                <i class="fas fa-link"></i>
+            </button>
+            <label style="flex:1;">
+                <span style="font-size:0.85rem;color:#475569;display:block;margin-bottom:4px;">Height (cm)</span>
+                <input type="number" id="modalPrintHeight" value="5" min="1" max="30" step="0.5" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:6px;font-size:1rem;box-sizing:border-box;">
+            </label>
+        </div>
+        
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+            <button onclick="setPresetSize(3, 3)" class="btn-secondary" style="flex:1;padding:8px;">Small (3cm)</button>
+            <button onclick="setPresetSize(5, 5)" class="btn-secondary" style="flex:1;padding:8px;">Medium (5cm)</button>
+            <button onclick="setPresetSize(8, 8)" class="btn-secondary" style="flex:1;padding:8px;">Large (8cm)</button>
+        </div>
+        
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+            <button onclick="closePrintModal()" class="btn-secondary" style="padding:10px 20px;">Cancel</button>
+            <button onclick="confirmPrint()" class="btn-primary" style="padding:10px 20px;"><i class="fas fa-print"></i> Print</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var qrContainers = document.querySelectorAll('.qr-code-target');
+        qrContainers.forEach(function(container) {
+            // Find the input associated with this QR code to get the default letter
+            var input = container.parentElement.querySelector('.qr-letter-input');
+            var letter = input ? input.value : 'A';
+            generateQR(container, letter);
+        });
+    });
+
+    function updateQRLetter(input, containerId) {
+        var container = document.getElementById(containerId);
+        container.removeAttribute('data-custom-img'); // Switch back to letter mode
+        container.removeAttribute('data-normal-qr'); // Remove normal mode
+        var letter = input.value.toUpperCase() || 'A';
+        generateQR(container, letter);
+    }
+
+    function updateQRImage(input, containerId) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var container = document.getElementById(containerId);
+                container.setAttribute('data-custom-img', e.target.result);
+                container.removeAttribute('data-normal-qr'); // Remove normal mode
+                generateQR(container);
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function toggleNormalQR(checkbox, containerId) {
+        var container = document.getElementById(containerId);
+        if (checkbox.checked) {
+            container.setAttribute('data-normal-qr', 'true');
+            container.removeAttribute('data-custom-img');
+        } else {
+            container.removeAttribute('data-normal-qr');
+        }
+        generateQR(container);
+    }
+
+    function generateQR(container, letterOverride = null) {
+        var qrText = container.getAttribute('data-qr');
+        var customImgSrc = container.getAttribute('data-custom-img');
+        var normalQRMode = container.getAttribute('data-normal-qr') === 'true';
+        
+        // Determine letter to use if no image
+        let letter = letterOverride;
+        if (!letter && !customImgSrc && !normalQRMode) {
+            const input = container.parentElement.querySelector('.qr-letter-input');
+            letter = input ? input.value.toUpperCase() : 'A';
+        }
+
+        container.innerHTML = ""; 
+        
+        if (!qrText) return;
+        if (typeof QRCode === 'undefined') {
+            container.innerHTML = "Lib Error";
+            return;
+        }
+
+        // Create a temporary container for the library
+        const tempDiv = document.createElement('div');
+        tempDiv.style.width = '400px';
+        tempDiv.style.height = '400px';
+        document.body.appendChild(tempDiv);
+        
+        try {
+            // Generate QR with High Error Correction
+            new QRCode(tempDiv, {
+                text: qrText,
+                width: 400,
+                height: 400,
+                colorDark : "#1e293b", // Dark Slate for a cleaner, professional look
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Wait for generation with retry logic
+            let attempts = 0;
+            const checkQRGeneration = () => {
+                const qrCanvas = tempDiv.querySelector('canvas');
+                const qrImg = tempDiv.querySelector('img');
+                
+                if ((qrCanvas || qrImg) && ((qrCanvas && qrCanvas.width > 0) || (qrImg && qrImg.width > 0 && qrImg.height > 0))) {
+                    // If normal QR mode is enabled, just display the standard QR
+                    if (normalQRMode) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 400;
+                        canvas.height = 400;
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillRect(0, 0, 400, 400);
+                        if (qrCanvas) ctx.drawImage(qrCanvas, 0, 0, 400, 400);
+                        else ctx.drawImage(qrImg, 0, 0, 400, 400);
+                        container.appendChild(canvas);
+                        if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                        return;
+                    }
+
+                    // For image mode - QR with centered logo
+                    if (customImgSrc) {
+                        const imgObj = new Image();
+                        imgObj.onerror = function() {
+                            console.error('Failed to load image');
+                            if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                        };
+                        imgObj.onload = function() {
+                            // Create final canvas with QR and centered image
+                            const finalCanvas = document.createElement('canvas');
+                            finalCanvas.width = 400;
+                            finalCanvas.height = 400;
+                            const finalCtx = finalCanvas.getContext('2d');
+                            
+                            // Draw white base
+                            finalCtx.fillStyle = '#FFFFFF';
+                            finalCtx.fillRect(0, 0, 400, 400);
+                            
+                            // Draw QR code as base
+                            if (qrCanvas) finalCtx.drawImage(qrCanvas, 0, 0, 400, 400);
+                            else finalCtx.drawImage(qrImg, 0, 0, 400, 400);
+                            
+                            // Draw semi-transparent white background box in center for better image visibility
+                            const logoBoxSize = 140;
+                            const logoBoxX = (400 - logoBoxSize) / 2;
+                            const logoBoxY = (400 - logoBoxSize) / 2;
+                            
+                            finalCtx.fillStyle = 'rgba(255, 255, 255, 1.0)';
+                            finalCtx.fillRect(logoBoxX, logoBoxY, logoBoxSize, logoBoxSize);
+                            
+                            // Fit and draw image within the box while maintaining aspect ratio
+                            const hRatio = logoBoxSize / imgObj.width;
+                            const vRatio = logoBoxSize / imgObj.height;
+                            const ratio = Math.min(hRatio, vRatio);
+                            const imgWidth = imgObj.width * ratio;
+                            const imgHeight = imgObj.height * ratio;
+                            const imgX = logoBoxX + (logoBoxSize - imgWidth) / 2;
+                            const imgY = logoBoxY + (logoBoxSize - imgHeight) / 2;
+                            
+                            // Draw image with best quality
+                            finalCtx.imageSmoothingEnabled = true;
+                            finalCtx.imageSmoothingQuality = 'high';
+                            finalCtx.drawImage(imgObj, imgX, imgY, imgWidth, imgHeight);
+                            
+                            // Restore finder patterns for scannability
+                            const finderSize = 100;
+                            const source = qrCanvas || qrImg;
+                            finalCtx.drawImage(source, 0, 0, finderSize, finderSize, 0, 0, finderSize, finderSize); // Top-left
+                            finalCtx.drawImage(source, 400 - finderSize, 0, finderSize, finderSize, 400 - finderSize, 0, finderSize, finderSize); // Top-right
+                            finalCtx.drawImage(source, 0, 400 - finderSize, finderSize, finderSize, 0, 400 - finderSize, finderSize, finderSize); // Bottom-left
+                            
+                            container.appendChild(finalCanvas);
+                            if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                        };
+                        imgObj.src = customImgSrc;
+                        return;
+                    }
+                    
+                    // QR code is ready, process it
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 400;
+                    canvas.height = 400;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // 1. Draw Full QR Code (Base Layer)
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, 400, 400);
+                    if (qrCanvas) ctx.drawImage(qrCanvas, 0, 0, 400, 400);
+                    else ctx.drawImage(qrImg, 0, 0, 400, 400);
+
+                    // 2. Create "Spotlight" Mask Layer for LETTER mode
+                    // This layer will be white/faded everywhere EXCEPT the shape
+                    const maskCanvas = document.createElement('canvas');
+                    maskCanvas.width = 400;
+                    maskCanvas.height = 400;
+                    const mCtx = maskCanvas.getContext('2d');
+
+                    // Fill with semi-transparent white (The "Faded" area)
+                    // 0.78 opacity makes the outside faint but still readable by good scanners
+                    mCtx.fillStyle = 'rgba(255, 255, 255, 0.78)'; 
+                    mCtx.fillRect(0, 0, 400, 400);
+
+                    // Cut out the Letter (The "Clear/Dark" area)
+                    mCtx.globalCompositeOperation = 'destination-out';
+
+                    // SHAPE MODE: Letter
+                    const fontSize = 296; // Adjusted for better letter sizing
+                    mCtx.font = '900 ' + fontSize + 'px Arial, sans-serif'; 
+                    mCtx.textAlign = 'center';
+                    mCtx.textBaseline = 'middle';
+                    mCtx.fillText(letter, 200, 216);
+                    
+                    mCtx.globalCompositeOperation = 'source-over';
+
+                    function combineLayers() {
+                        // Apply the base QR on canvas
+                        ctx.clearRect(0, 0, 400, 400);
+                        if (qrCanvas) ctx.drawImage(qrCanvas, 0, 0, 400, 400);
+                        else ctx.drawImage(qrImg, 0, 0, 400, 400);
+
+                        // Draw the faded overlay (with letter cut-out)
+                        ctx.drawImage(maskCanvas, 0, 0);
+
+                        // Draw a subtle dark stroke around the letter so humans can see the shape clearly
+                        // without filling the letter area (which would break scanning).
+                        ctx.font = '900 ' + fontSize + 'px Arial, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.lineWidth = Math.max(6, 5);
+                        ctx.strokeStyle = 'rgba(15, 23, 42, 0.95)';
+                        ctx.strokeText(letter, 200, 216);
+
+                        // 3. Restore Finder Patterns (Full Contrast)
+                        // We redraw the 3 corners from the original QR to ensure they are 100% dark
+                        // This anchors the scanner
+                        const finderSize = 100; 
+                        const source = qrCanvas || qrImg;
+
+                        ctx.drawImage(source, 0, 0, finderSize, finderSize, 0, 0, finderSize, finderSize);
+                        ctx.drawImage(source, 400 - finderSize, 0, finderSize, finderSize, 400 - finderSize, 0, finderSize, finderSize);
+                        ctx.drawImage(source, 0, 400 - finderSize, finderSize, finderSize, 0, 400 - finderSize, finderSize, finderSize);
+                            
+                        container.appendChild(canvas);
+                        if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                    }
+
+                    combineLayers();
+
+                } else if (attempts < 20) {
+                    // Retry if not ready yet (20 attempts = 2 seconds max)
+                    attempts++;
+                    setTimeout(checkQRGeneration, 100);
+                } else {
+                    // Failed after retries
+                    container.innerHTML = "<span style='font-size:12px; color:#666;'>Generating...</span>";
+                    if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                }
+            };
+
+            checkQRGeneration();
+        } catch (error) {
+            console.error('QR generation error:', error);
+            container.innerHTML = "<span style='font-size:10px; color:red;'>Error</span>";
+            if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+        }
+    }
+
+    function toggleSelectAll(source) {
+        const checkboxes = document.querySelectorAll('.qr-checkbox');
+        checkboxes.forEach(cb => cb.checked = source.checked);
+    }
+
+    function showTab(tabName) {
+        // Reset active class on sidebar
+        document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+        
+        // Hide all sections
+        document.getElementById('section-add').style.display = 'none';
+        document.getElementById('section-feedback').style.display = 'none';
+        document.getElementById('section-list').style.display = 'none';
+        document.getElementById('section-expired').style.display = 'none';
+        
+        if (tabName === 'add') {
+            document.getElementById('nav-add').classList.add('active');
+            document.getElementById('section-add').style.display = 'block';
+            document.getElementById('section-feedback').style.display = 'block';
+            document.querySelector('.page-title').innerText = 'User Dashboard';
+        } else if (tabName === 'list') {
+            document.getElementById('nav-list').classList.add('active');
+            document.getElementById('section-list').style.display = 'block';
+            document.querySelector('.page-title').innerText = 'My Assets';
+        } else if (tabName === 'expired') {
+            document.getElementById('nav-expired').classList.add('active');
+            document.getElementById('section-expired').style.display = 'block';
+            document.querySelector('.page-title').innerText = 'Expired Assets History';
+        }
+    }
+
+    // Print Modal Variables
+    var currentPrintBtn = null;
+    var currentPrintMode = 'single'; // 'single' or 'multiple'
+
+    function openPrintModal(btn, mode) {
+        currentPrintBtn = btn;
+        currentPrintMode = mode;
+        
+        if (mode === 'multiple') {
+            const checkedBoxes = document.querySelectorAll('.qr-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                alert('Please select at least one asset to print.');
+                return;
+            }
+        }
+        
+        document.getElementById('printSizeModal').style.display = 'flex';
+    }
+
+    function closePrintModal() {
+        document.getElementById('printSizeModal').style.display = 'none';
+        currentPrintBtn = null;
+        currentPrintMode = 'single';
+    }
+
+    function syncModalSize() {
+        var width = document.getElementById('modalPrintWidth').value;
+        document.getElementById('modalPrintHeight').value = width;
+    }
+
+    function setPresetSize(width, height) {
+        document.getElementById('modalPrintWidth').value = width;
+        document.getElementById('modalPrintHeight').value = height;
+    }
+
+    function confirmPrint() {
+        var printWidthCm = parseFloat(document.getElementById('modalPrintWidth').value) || 5;
+        var printHeightCm = parseFloat(document.getElementById('modalPrintHeight').value) || 5;
+        
+        // Save references before closing modal (which resets them)
+        var btn = currentPrintBtn;
+        var mode = currentPrintMode;
+        
+        closePrintModal();
+        
+        if (mode === 'single' && btn) {
+            printQRWithSize(btn, printWidthCm, printHeightCm);
+        } else if (mode === 'multiple') {
+            printSelectedQRsWithSize(printWidthCm, printHeightCm);
+        }
+    }
+
+    function printQRWithSize(btn, printWidthCm, printHeightCm) {
+        var container = btn.closest('td').querySelector('.qr-code-target');
+        var img = container.querySelector('img');
+        var src = "";
+        
+        if (img) {
+            src = img.src;
+        } else {
+            var canvas = container.querySelector('canvas');
+            if (canvas) src = canvas.toDataURL("image/png");
+        }
+        
+        if (src) {
+            var win = window.open('', 'Print QR', 'height=600,width=600');
+            win.document.write('<html><head><title>Print Asset QR</title>');
+            win.document.write('<style>@media print { @page { margin: 1cm; } }</style>');
+            win.document.write('</head><body style="text-align:center; font-family: sans-serif;">');
+            win.document.write('<h3>Asset QR Code</h3>');
+            win.document.write('<img src="' + src + '" style="width:' + printWidthCm + 'cm; height:' + printHeightCm + 'cm; margin-bottom: 20px;">');
+            win.document.write('<p>Scan for details</p>');
+            win.document.write('<script>window.onload = function(){ window.print(); window.close(); }<\/script>');
+            win.document.write('</body></html>');
+            win.document.close();
+        } else {
+            alert('QR Code is still generating or failed to load.');
+        }
+    }
+
+    function printSelectedQRsWithSize(printWidthCm, printHeightCm) {
+        const checkedBoxes = document.querySelectorAll('.qr-checkbox:checked');
+
+        const printWindow = window.open('', 'Print Selected', 'height=800,width=800');
+        printWindow.document.write('<html><head><title>Print Selected QR Codes</title>');
+        printWindow.document.write(`
+            <style>
+                @media print { @page { margin: 1cm; } }
+                body { font-family: sans-serif; }
+                .qr-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+                .qr-item { text-align: center; page-break-inside: avoid; }
+                .qr-item img, .qr-item canvas { width: ${printWidthCm}cm !important; height: ${printHeightCm}cm !important; }
+                .qr-item p { font-weight: bold; margin: 5px 0 0 0; font-size: 12px; word-wrap: break-word; }
+                .qr-item small { font-size: 10px; color: #555; font-family: monospace; word-wrap: break-word; }
+                @media print {
+                    body { -webkit-print-color-adjust: exact; }
+                }
+            </style>
+        `);
+        printWindow.document.write('</head><body><h2>Selected Asset QR Codes</h2><div class="qr-grid">');
+        
+        checkedBoxes.forEach(cb => {
+            const tr = cb.closest('tr');
+            const container = tr.querySelector('.qr-code-target');
+            const canvas = container.querySelector('canvas');
+            const img = container.querySelector('img');
+            
+            const detailsCell = tr.querySelector('td:nth-child(2)');
+            const assetName = detailsCell.querySelector('div:first-child').innerText;
+            const assetId = detailsCell.querySelector('div:last-child').innerText;
+
+            let imgSrc = "";
+            if (canvas) {
+                imgSrc = canvas.toDataURL('image/png');
+            } else if (img) {
+                imgSrc = img.src;
+            }
+
+            if (imgSrc) {
+                printWindow.document.write(`<div class="qr-item"><img src="${imgSrc}"><p>${assetName}</p><small>${assetId}</small></div>`);
+            }
+        });
+
+        printWindow.document.write('</div></body></html>');
+        printWindow.document.close();
+        printWindow.onload = function() { printWindow.print(); printWindow.close(); };
+    }
+
+    // Close modal on clicking outside
+    document.getElementById('printSizeModal').addEventListener('click', function(e) {
+        if (e.target === this) closePrintModal();
+    });
+</script>
+{% endblock %}

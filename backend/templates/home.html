@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Home | AssetMS{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-container container">
+        <div class="hero-text">
+            <h1>Effortless Asset Management</h1>
+            <p class="subheadline">
+                Track assets with powerful QR code technology.<br>
+                Add once. Generate QR. Scan anytime. Stay organized forever.
+            </p>
+            <div class="hero-buttons">
+                <a href="/register" class="btn-primary-hero">Get Started Free</a>
+                <a href="#features" class="btn-secondary">Learn More</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="{{ url_for('static', filename='images/asset-management.png') }}" alt="A dashboard showing asset management on a laptop and tablet">
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section" id="features">
+    <div class="container">
+        <div class="section-header">
+            <h2>Powerful Features for Real-World Use</h2>
+            <p>Everything you need to manage assets efficiently and securely</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <h3>Auto QR Code Generation</h3>
+                <p>Add any asset — get a printable QR code instantly. Stick it on chairs, CPUs, projectors, and more.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3>Scan with Any Phone</h3>
+                <p>Use your phone camera to instantly view location, warranty, status, history, and report issues.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3>Smart Alerts & Reports</h3>
+                <p>Get notified about warranty expiry, maintenance due, or misplaced items. Export reports anytime.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>Multi-User Access</h3>
+                <p>Admins, staff, and departments — everyone sees what they need with secure role-based access.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-file-excel"></i>
+                </div>
+                <h3>Bulk Import</h3>
+                <p>Import hundreds of assets from Excel in seconds. Perfect for onboarding labs or offices.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Secure & Reliable</h3>
+                <p>Data encrypted. Regular backups. Built for institutions that value privacy and trust.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-it-works-section" id="how-it-works">
+    <div class="container">
+        <div class="section-header">
+            <h2>How It Works</h2>
+            <p>Simple 4-step process to go from chaos to control</p>
+        </div>
+        <div class="steps-container">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Register & Add Assets</h3>
+                <p>Create your organization account and start adding items — one by one or via bulk upload.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Generate QR Codes</h3>
+                <p>System auto-generates unique QR codes. Print and attach to physical assets.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Stick & Scan</h3>
+                <p>Place QR stickers on equipment. Anyone can scan with their phone.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3>View & Update Instantly</h3>
+                <p>See full details, update status, report issues — all in real time.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA -->
+<section class="features-section" style="background: linear-gradient(135deg, #5E72E4, #825EE4); color: white;">
+    <div class="container text-center">
+        <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Ready to Take Control of Your Assets?</h2>
+        <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9;">
+            Join hundreds of colleges and offices already saving time and reducing loss.
+        </p>
+        <a href="/register" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;">
+            Start Free — No Credit Card Required
+        </a>
+    </div>
+</section>
+
+{% endblock %}
