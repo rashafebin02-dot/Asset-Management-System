@@ -10,34 +10,75 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              'poppins': ['Poppins', 'sans-serif'],
+            },
+            colors: {
+              primary: {
+                DEFAULT: '#5E72E4',
+                hover: '#4B5CC0',
+                dark: '#4B5CC0',
+              },
+              secondary: '#F8F9FE',
+              text: {
+                DEFAULT: '#32325D',
+                light: '#8898AA',
+              },
+              'border-color': '#E9ECEF',
+              sidebar: {
+                bg: '#172B4D',
+                text: '#CED4DA',
+                active: '#2A4065',
+              },
+              alert: '#FB6340',
+              success: '#28a745',
+              error: '#dc3545',
+              danger: '#ef4444',
+            },
+            boxShadow: {
+              'custom': '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)',
+              'admin': '0 4px 10px rgba(0,0,0,0.05)',
+              'admin-sidebar': '2px 0 10px rgba(0,0,0,0.05)',
+            },
+            borderRadius: {
+              'custom': '8px',
+            }
+          }
+        }
+      }
+    </script>
 </head>
-<body>
+<body class="flex flex-col min-h-screen bg-secondary font-[Poppins] text-text">
 
-    <!-- NAVBAR -->
-    {% if session.get('user_id') %}
-        <!-- No top navbar for logged-in users, as they will use a sidebar -->
-    {% else %}
-        <nav class="navbar">
-            <div class="logo">
-                <a href="/"><i class="fas fa-qrcode"></i> AssetMS</a>
-            </div>
-            <ul class="nav-links">
-                <li><a href="/#features">Features</a></li>
-                <li><a href="/#how-it-works">How It Works</a></li>
-                <li><a href="/free-qr">Free QR Tool</a></li>
-                <li><a href="/login" class="btn-nav-outline">Login</a></li> 
-                <li><a href="/register" class="btn-primary">Get Started Free</a></li>
+    <!-- NAVBAR (hidden when logged in) -->
+    {% if not session.get('user_id') %}
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="/" class="text-2xl font-semibold text-primary flex items-center gap-2">
+                <i class="fas fa-qrcode"></i> AssetMS
+            </a>
+            <ul class="hidden md:flex items-center gap-8">
+                <li><a href="/#features" class="text-text-light font-medium hover:text-primary transition-colors">Features</a></li>
+                <li><a href="/#how-it-works" class="text-text-light font-medium hover:text-primary transition-colors">How It Works</a></li>
+                <li><a href="/free-qr" class="text-text-light font-medium hover:text-primary transition-colors">Free QR Tool</a></li>
+                <li><a href="/login" class="text-text font-medium py-2 px-4 rounded-md hover:bg-gray-100 transition-colors">Login</a></li>
+                <li><a href="/register" class="bg-primary text-white py-2 px-5 rounded-lg shadow-md hover:bg-primary-hover transition-all">Get Started Free</a></li>
             </ul>
-        </nav>
+        </div>
+    </nav>
     {% endif %}
 
     {% block content %}{% endblock %}
 
     {% if not session.get('user_id') %}
         <!-- FOOTER -->
-        <footer class="footer">
+        <footer class="w-full text-center p-6 bg-secondary text-text-light text-sm border-t border-border-color mt-auto">
             <p>© 2025 AssetMS | Developed by Rasha Febin</p>
         </footer>
     {% endif %}

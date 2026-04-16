@@ -2,191 +2,572 @@
 {% block title %}Free QR Generator | AssetMS{% endblock %}
 
 {% block content %}
+
 <style>
-    /* Specific styles for the QR Tool */
-    .qr-tool-section {
-        padding: 60px 18px;
-        background: linear-gradient(to bottom, #f8fafc, #ffffff);
-        min-height: 72vh;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-    }
-    .tool-container {
-        background: white;
-        padding: 28px;
-        border-radius: 14px;
-        box-shadow: 0 8px 20px rgba(15,23,42,0.06);
-        width: 100%;
-        max-width: 920px;
-        text-align: left;
-        border: 1px solid #eef2f7;
-    }
-    .tool-grid{
-        display: grid;
-        grid-template-columns: 1fr 380px;
-        gap: 20px;
-        align-items: start;
-    }
-    @media (max-width: 880px){
-        .tool-grid{grid-template-columns: 1fr;}
-        .tool-container{padding:20px}
-    }
-    .tool-header h1 {
-        color: #0f172a;
-        margin-bottom: 6px;
-        font-size: 1.5rem;
-    }
-    .tool-header p {
-        color: #475569;
-        margin-bottom: 14px;
-        font-size: 0.95rem;
-    }
-    .input-area textarea {
-        width: 100%;
-        padding: 12px 14px;
-        border: 1px solid #e6eef6;
-        border-radius: 8px;
-        font-family: 'Poppins', sans-serif;
-        font-size: 0.98rem;
-        resize: vertical;
-        min-height: 120px;
-        margin-bottom: 12px;
-        transition: border-color 0.18s, box-shadow 0.18s;
+    * {
+        margin: 0;
+        padding: 0;
         box-sizing: border-box;
     }
-    .input-area textarea:focus{box-shadow:0 6px 18px rgba(59,130,246,0.08)}
-    .input-area textarea:focus {
-        border-color: #3b82f6;
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background-color: #f5f7fa;
+        color: #333;
+    }
+
+    .qr-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .qr-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .qr-header h1 {
+        font-size: 36px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 10px;
+    }
+
+    .qr-header p {
+        font-size: 16px;
+        color: #666;
+        line-height: 1.6;
+    }
+
+    .qr-main {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        align-items: start;
+    }
+
+    .qr-form {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="file"] {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+    }
+
+    .form-group input[type="text"]:focus {
         outline: none;
+        border-color: #4a90e2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
     }
-    .qr-display {
-        margin-top: 6px;
+
+    .radio-group {
         display: flex;
-        flex-direction: column;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    .radio-option {
+        display: flex;
         align-items: center;
-        justify-content: flex-start;
-        min-height: 200px;
-    }
-    #qrcode img, #qrcode canvas {
-        border: 10px solid white;
-        box-shadow: 0 4px 18px rgba(2,6,23,0.08);
-        margin-bottom: 16px;
-        width: 320px !important;
-        height: 320px !important;
-        display:block;margin-left:auto;margin-right:auto
-    }
-    #compositeCanvas {
-        border: 10px solid white;
-        box-shadow: 0 4px 18px rgba(2,6,23,0.08);
-        margin-bottom: 12px;
-        width: 320px !important;
-        height: 320px !important;
-        display:block;margin-left:auto;margin-right:auto
-    }
-    .action-buttons {
-        display: none; /* Hidden until QR is generated */
         gap: 10px;
+        padding: 12px 16px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 14px;
+    }
+
+    .radio-option:hover {
+        border-color: #4a90e2;
+        background-color: #f8faff;
+    }
+
+    .radio-option input[type="radio"] {
+        cursor: pointer;
+    }
+
+    .style-info {
+        font-size: 12px;
+        color: #999;
+        font-style: italic;
+        margin-top: 8px;
+    }
+
+    .hidden-section {
+        display: none;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 12px;
         justify-content: center;
         flex-wrap: wrap;
-        margin-top:8px;
+        margin-top: 20px;
     }
-    .btn-primary{background:#2563eb;color:white;border:0;padding:8px 12px;border-radius:8px;cursor:pointer}
-    .btn-secondary{background:#e6eef6;color:#0f172a;border:0;padding:8px 10px;border-radius:8px;cursor:pointer}
-    .controls-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .style-info{font-size:0.88rem;color:#64748b}
-    .style-info {
-        font-size: 0.9rem;
-        color: #64748b;
-        margin-top: 8px;
-        font-style: italic;
+
+    .button-group button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background-color: #4a90e2;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #357abd;
+    }
+
+    .btn-secondary {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e0e0e0;
+    }
+
+    .qr-preview {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 100px;
+    }
+
+    .qr-preview h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .qr-preview-box {
+        background-color: #f5f7fa;
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 350px;
+        text-align: center;
+    }
+
+    #qrcode, #qrcode img, #qrcode canvas, #compositeCanvas {
+        display: block;
+        margin: 0 auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        max-width: 100%;
+        height: auto;
+    }
+
+    .preview-text {
+        color: #999;
+        font-size: 14px;
+    }
+
+    #printSizeModal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 50;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #printSizeModal.show {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+        max-width: 500px;
+        width: 90%;
+    }
+
+    .modal-header {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .modal-description {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    .size-inputs {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        align-items: flex-end;
+    }
+
+    .size-input-group {
+        flex: 1;
+    }
+
+    .size-input-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .size-input-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .link-btn {
+        padding: 8px 12px;
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .preset-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .preset-buttons button {
+        flex: 1;
+        padding: 10px;
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .preset-buttons button:hover {
+        background-color: #e0e0e0;
+    }
+
+    .modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .modal-footer button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .modal-footer .cancel-btn {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+
+    .modal-footer .print-btn {
+        background-color: #4a90e2;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .qr-main {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .qr-preview {
+            position: static;
+        }
+
+        .qr-header h1 {
+            font-size: 28px;
+        }
+
+        .radio-group {
+            flex-direction: column;
+        }
+
+        .radio-option {
+            width: 100%;
+        }
     }
 </style>
 
-<section class="qr-tool-section">
-    <div class="tool-container">
-        <div class="tool-grid">
-            <div>
-                <div class="tool-header">
-                    <h1>Free QR Code Generator</h1>
-                    <p>Type text, a URL, or contact info below to instantly create a QR code.</p>
+<div class="qr-container">
+    <!-- Header -->
+    <div class="qr-header">
+        <h1>Free QR Code Generator</h1>
+        <p>Type text or URL below to instantly create a QR code. See it update live on the right.</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="qr-main">
+        <!-- Left - Form -->
+        <div class="qr-form">
+            <!-- Input -->
+            <div class="form-group">
+                <label>Enter Text/URL to Encode</label>
+                <input type="text" id="qrInput" placeholder="https://example.com or any text" oninput="generateQR()">
+            </div>
+
+            <!-- Style Selection -->
+            <div class="form-group">
+                <label>QR Code Style</label>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="style" value="none" checked onchange="onStyleChange()">
+                        <span>Standard</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="style" value="letter" onchange="onStyleChange()">
+                        <span>Letter Overlay</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="style" value="image" onchange="onStyleChange()">
+                        <span>Logo/Image</span>
+                    </label>
                 </div>
-                <div class="input-area">
-                    <textarea id="qrInput" placeholder="Ex: https://mysite.com or Hello World..." oninput="generateQR()"></textarea>
+                <div class="style-info" id="styleInfo">Standard QR code format - highly compatible with all scanners</div>
+            </div>
 
-                    <div class="controls-row" style="margin-top:8px;">
-                        <label style="font-weight:600;margin-right:6px;">Style:</label>
-                        <label><input type="radio" name="style" value="none" checked onchange="onStyleChange()"> Normal</label>
-                        <label><input type="radio" name="style" value="letter" onchange="onStyleChange()"> Alphabet</label>
-                        <label><input type="radio" name="style" value="image" onchange="onStyleChange()"> Image</label>
+            <!-- Letter Controls -->
+            <div id="letterControls" class="form-group hidden-section">
+                <label>Custom Letter</label>
+                <input type="text" id="letterInput" maxlength="1" value="A" placeholder="A" oninput="generateQR()" style="width: 60px;">
+                <div class="style-info">Type one letter to create the spotlight effect</div>
+            </div>
+
+            <!-- Image Controls -->
+            <div id="imageControls" class="form-group hidden-section">
+                <label>Upload Logo/Image</label>
+                <input type="file" id="logoInput" accept="image/*" onchange="onLogoChange(event)">
+                <div class="style-info">Supported formats: PNG, JPG, GIF (recommended: 200x200px)</div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group" id="actions" style="display: none;">
+                <button class="btn-primary" onclick="downloadQR()">
+                    <i class="fas fa-download"></i>Download PNG
+                </button>
+                <button class="btn-secondary" onclick="openPrintModal()">
+                    <i class="fas fa-print"></i>Print
+                </button>
+            </div>
+        </div>
+
+        <!-- Right - QR Preview -->
+        <div class="qr-preview">
+            <h3>Your QR Code</h3>
+            <div class="qr-preview-box">
+                <div id="qrcode" style="display: none;"></div>
+                <canvas id="compositeCanvas" style="display: none;"></canvas>
+                <p class="preview-text" id="previewText">Your QR code will appear here</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Print Modal -->
+<div id="printSizeModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <i class="fas fa-ruler-combined"></i> Print Size Settings
+        </div>
+        <div class="modal-description">Customize the QR code dimensions for printing</div>
+        
+        <div class="size-inputs">
+            <div class="size-input-group">
+                <label>Width (cm)</label>
+                <input type="number" id="modalPrintWidth" value="5" min="1" max="30" step="0.5">
+            </div>
+            <button class="link-btn" onclick="syncModalSize()" title="Sync dimensions">
+                <i class="fas fa-link"></i>
+            </button>
+            <div class="size-input-group">
+                <label>Height (cm)</label>
+                <input type="number" id="modalPrintHeight" value="5" min="1" max="30" step="0.5">
+            </div>
+        </div>
+        
+        <div class="preset-buttons">
+            <button onclick="setPresetSize(3, 3)">Small (3cm)</button>
+            <button onclick="setPresetSize(5, 5)">Medium (5cm)</button>
+            <button onclick="setPresetSize(8, 8)">Large (8cm)</button>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="cancel-btn" onclick="closePrintModal()">Cancel</button>
+            <button class="print-btn" onclick="confirmPrint()">
+                <i class="fas fa-print"></i> Print
+            </button>
+        </div>
+    </div>
+</div>
+            <!-- Left Column - Input Controls (2/3 width) -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-custom p-8 space-y-8">
+                    <!-- Input Section -->
+                    <div class="space-y-4">
+                        <label class="block text-sm font-semibold text-text">Enter Text/URL to Encode</label>
+                        <input type="text" id="qrInput" placeholder="https://example.com or any text" class="w-full px-4 py-3 border border-border-color rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 text-base transition-all" oninput="generateQR()">
                     </div>
 
-                    <div class="style-info" id="styleInfo">Standard QR code format - highly compatible with all scanners</div>
-
-                    <div id="letterControls" style="display:none;margin-top:12px;gap:8px;align-items:center;justify-content:flex-start;">
-                        <input id="letterInput" maxlength="1" placeholder="A" style="width:48px;padding:8px;font-size:1.2rem;text-align:center;font-weight:800;color:#0f172a;border:1px solid #e6eef6;border-radius:8px;" oninput="generateQR()"></input>
-                        <div style="font-size:0.9rem;color:#64748b;">Type one letter to create the spotlight effect</div>
+                    <!-- Style Selection -->
+                    <div class="space-y-4">
+                        <label class="block text-sm font-semibold text-text">QR Code Style</label>
+                        <div class="flex flex-wrap gap-4 mt-3">
+                            <label class="flex items-center gap-3 cursor-pointer p-3 border-2 border-border-color rounded-lg hover:border-primary transition-colors">
+                                <input type="radio" name="style" value="none" class="w-4 h-4" checked onchange="onStyleChange()">
+                                <span class="font-medium text-text">Standard</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer p-3 border-2 border-border-color rounded-lg hover:border-primary transition-colors">
+                                <input type="radio" name="style" value="letter" class="w-4 h-4" onchange="onStyleChange()">
+                                <span class="font-medium text-text">Letter Overlay</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer p-3 border-2 border-border-color rounded-lg hover:border-primary transition-colors">
+                                <input type="radio" name="style" value="image" class="w-4 h-4" onchange="onStyleChange()">
+                                <span class="font-medium text-text">Logo/Image</span>
+                            </label>
+                        </div>
+                        <p class="text-sm text-text-light italic mt-2" id="styleInfo">Standard QR code format - highly compatible with all scanners</p>
                     </div>
 
-                    <div id="imageControls" style="display:none;margin-top:12px;gap:8px;align-items:center;justify-content:flex-start;">
-                        <input id="logoFile" type="file" accept="image/*" onchange="onLogoChange(event)">
-                        <label for="logoSize" style="font-size:0.9rem;color:#64748b;margin-left:6px;">Logo %:</label>
-                        <input id="logoSize" type="range" min="10" max="70" value="40" onchange="generateQR()">
+                    <!-- Letter Controls -->
+                    <div id="letterControls" class="hidden space-y-4">
+                        <div class="flex flex-col gap-3">
+                            <label class="block text-sm font-semibold text-text">Custom Letter</label>
+                            <input type="text" id="letterInput" maxlength="1" value="A" placeholder="A" class="w-20 px-4 py-2 text-center border border-border-color rounded-lg font-bold text-lg text-primary focus:outline-none focus:border-primary transition-all" oninput="generateQR()">
+                            <p class="text-xs text-text-light">Type one letter to create the spotlight effect</p>
+                        </div>
+                    </div>
+
+                    <!-- Image Controls -->
+                    <div id="imageControls" class="hidden space-y-4">
+                        <label class="block text-sm font-semibold text-text">Upload Logo/Image</label>
+                        <div class="flex items-center gap-3 p-4 border-2 border-dashed border-primary/30 rounded-lg bg-primary/5 hover:border-primary transition-colors">
+                            <i class="fas fa-image text-primary text-xl"></i>
+                            <input type="file" id="logoInput" accept="image/*" onchange="onLogoChange(event)" class="flex-1 cursor-pointer">
+                        </div>
+                        <p class="text-xs text-text-light">Supported formats: PNG, JPG, GIF (recommended size: 200x200px or smaller)</p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="hidden gap-3 justify-center flex-wrap" id="actions">
+                        <button class="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors flex items-center gap-2 text-sm" onclick="downloadQR()">
+                            <i class="fas fa-download"></i>Download PNG
+                        </button>
+                        <button class="bg-secondary text-text px-6 py-3 rounded-lg font-semibold hover:bg-border-color transition-colors flex items-center gap-2 text-sm" onclick="openPrintModal()">
+                            <i class="fas fa-print"></i>Print
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div class="qr-display">
-                <div id="qrcode"></div>
-                <canvas id="compositeCanvas" style="display:none;border:10px solid white;box-shadow:0 4px 15px rgba(0,0,0,0.1);margin-bottom:20px"></canvas>
-                <div class="action-buttons" id="actions">
-                    <button class="btn-primary" onclick="downloadQR()"><i class="fas fa-download"></i>&nbsp;Download PNG</button>
-                    <button class="btn-secondary" onclick="openPrintModal()"><i class="fas fa-print"></i>&nbsp;Print</button>
+            <!-- Right Column - QR Preview (1/3 width, sticky) -->
+            <div class="qr-display-container">
+                <div class="bg-white rounded-2xl shadow-custom p-8">
+                    <h3 class="text-lg font-bold text-text mb-6 text-center">Your QR Code</h3>
+                    <div class="bg-secondary rounded-lg p-6 flex flex-col items-center justify-center min-h-96">
+                        <div id="qrcode" style="display:none; text-align:center;"></div>
+                        <canvas id="compositeCanvas" class="hidden rounded-lg"></canvas>
+                        <p class="text-center text-text-light text-sm" id="previewText">Your QR code will appear here</p>
+                    </div>
                 </div>
-                <div style="width:100%;text-align:center;margin-top:8px;color:#94a3b8;font-size:0.9rem">Preview</div>
             </div>
         </div>
     </div>
 </section>
 
 <!-- Print Size Modal -->
-<div id="printSizeModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
-    <div style="background:white;padding:25px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);max-width:400px;width:90%;">
-        <h3 style="margin:0 0 15px 0;color:#0f172a;display:flex;align-items:center;gap:10px;">
-            <i class="fas fa-ruler-combined" style="color:#3b82f6"></i> Print Size Settings
+<div id="printSizeModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white p-8 rounded-2xl shadow-custom max-w-md w-11/12">
+        <h3 class="text-xl font-bold text-text mb-2 flex items-center gap-3">
+            <i class="fas fa-ruler-combined text-primary"></i> Print Size Settings
         </h3>
-        <p style="color:#64748b;font-size:0.9rem;margin-bottom:15px;">Customize the QR code dimensions for printing</p>
+        <p class="text-text-light text-sm mb-6">Customize the QR code dimensions for printing</p>
         
-        <div style="display:flex;gap:15px;align-items:center;margin-bottom:15px;">
-            <label style="flex:1;">
-                <span style="font-size:0.85rem;color:#475569;display:block;margin-bottom:4px;">Width (cm)</span>
-                <input type="number" id="modalPrintWidth" value="5" min="1" max="30" step="0.5" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:6px;font-size:1rem;box-sizing:border-box;">
+        <div class="flex gap-4 items-center mb-6">
+            <label class="flex-1">
+                <span class="text-xs font-semibold text-text block mb-2">Width (cm)</span>
+                <input type="number" id="modalPrintWidth" value="5" min="1" max="30" step="0.5" class="w-full px-3 py-2 border border-border-color rounded-lg focus:border-primary focus:outline-none text-sm">
             </label>
-            <button onclick="syncModalSize()" style="margin-top:20px;padding:10px;background:#e2e8f0;border:none;border-radius:6px;cursor:pointer;" title="Sync dimensions">
-                <i class="fas fa-link"></i>
+            <button onclick="syncModalSize()" class="mt-6 p-2 bg-secondary hover:bg-border-color border border-border-color rounded-lg transition-colors" title="Sync dimensions">
+                <i class="fas fa-link text-text"></i>
             </button>
-            <label style="flex:1;">
-                <span style="font-size:0.85rem;color:#475569;display:block;margin-bottom:4px;">Height (cm)</span>
-                <input type="number" id="modalPrintHeight" value="5" min="1" max="30" step="0.5" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:6px;font-size:1rem;box-sizing:border-box;">
+            <label class="flex-1">
+                <span class="text-xs font-semibold text-text block mb-2">Height (cm)</span>
+                <input type="number" id="modalPrintHeight" value="5" min="1" max="30" step="0.5" class="w-full px-3 py-2 border border-border-color rounded-lg focus:border-primary focus:outline-none text-sm">
             </label>
         </div>
         
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
-            <button onclick="setPresetSize(3, 3)" class="btn-secondary" style="flex:1;padding:8px;">Small (3cm)</button>
-            <button onclick="setPresetSize(5, 5)" class="btn-secondary" style="flex:1;padding:8px;">Medium (5cm)</button>
-            <button onclick="setPresetSize(8, 8)" class="btn-secondary" style="flex:1;padding:8px;">Large (8cm)</button>
+        <div class="flex gap-2 flex-wrap mb-6">
+            <button onclick="setPresetSize(3, 3)" class="flex-1 bg-secondary hover:bg-border-color text-text px-3 py-2 rounded-lg text-sm font-medium transition-colors">Small (3cm)</button>
+            <button onclick="setPresetSize(5, 5)" class="flex-1 bg-secondary hover:bg-border-color text-text px-3 py-2 rounded-lg text-sm font-medium transition-colors">Medium (5cm)</button>
+            <button onclick="setPresetSize(8, 8)" class="flex-1 bg-secondary hover:bg-border-color text-text px-3 py-2 rounded-lg text-sm font-medium transition-colors">Large (8cm)</button>
         </div>
         
-        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
-            <button onclick="closePrintModal()" class="btn-secondary" style="padding:10px 20px;">Cancel</button>
-            <button onclick="confirmPrint()" class="btn-primary" style="padding:10px 20px;"><i class="fas fa-print"></i> Print</button>
+        <div class="flex gap-3 justify-end">
+            <button onclick="closePrintModal()" class="px-6 py-2 bg-secondary hover:bg-border-color text-text rounded-lg font-medium transition-colors">Cancel</button>
+            <button onclick="confirmPrint()" class="px-6 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                <i class="fas fa-print"></i> Print
+            </button>
         </div>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-    var qrInstance = null;
     var uploadedLogoDataUrl = null;
 
     function generateQR() {
@@ -194,343 +575,232 @@
         var actions = document.getElementById("actions");
         var qrContainer = document.getElementById("qrcode");
         var canvas = document.getElementById('compositeCanvas');
+        var previewText = document.getElementById('previewText');
         
         if (!text) {
             qrContainer.innerHTML = "";
             qrContainer.style.display = "none";
             canvas.style.display = "none";
             actions.style.display = "none";
-            if (qrInstance) {
-                qrInstance.clear();
-                qrInstance = null;
-            }
+            previewText.style.display = "block";
+            previewText.textContent = 'Your QR code will appear here';
             return;
         }
 
         qrContainer.innerHTML = "";
-        qrContainer.style.display = "block"; // Show hidden container for generation
-        canvas.style.display = "none"; // Hide final canvas for now
+        qrContainer.style.display = "block";
+        canvas.style.display = "none";
+        previewText.style.display = "none";
 
-        // Use qrcodejs. High correction is essential for this to work.
-        qrInstance = new QRCode(qrContainer, {
-            text: text,
-            width: 500,
-            height: 500,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
+        try {
+            new QRCode(qrContainer, {
+                text: text,
+                width: 400,
+                height: 400,
+                colorDark: "#1e293b",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
 
-        // Wait for generation with a retry mechanism to avoid race conditions
-        let attempts = 0;
-        const checkQRReady = () => {
-            const qrImg = qrContainer.querySelector('img');
-            const qrCanvas = qrContainer.querySelector('canvas');
-            const sourceEl = qrImg || qrCanvas;
+            let attempts = 0;
+            const checkQRReady = () => {
+                const qrImg = qrContainer.querySelector('img');
+                const qrCanvas = qrContainer.querySelector('canvas');
 
-            if (sourceEl && ((qrImg && qrImg.complete && qrImg.naturalWidth > 0) || qrCanvas)) {
-                // QR is ready
-                renderShapedQR();
-                qrContainer.style.display = "none"; // Hide the raw QR
-                canvas.style.display = "block"; // Show the styled QR
-                actions.style.display = "flex";
-            } else if (attempts < 20) { // Retry for up to 2 seconds
-                attempts++;
-                setTimeout(checkQRReady, 100);
-            } else {
-                console.error("QR Code generation timed out.");
-                qrContainer.innerHTML = "Error: QR generation failed.";
-                canvas.style.display = "none";
-                actions.style.display = "none";
-            }
-        };
-        setTimeout(checkQRReady, 100); // Start checking
-    }
-
-    function renderShapedQR() {
-        var qrImg = document.querySelector('#qrcode img');
-        var qrCanvas = document.querySelector('#qrcode canvas');
-        var sourceEl = qrImg || qrCanvas;
-
-        if (!sourceEl) {
-            console.error("QR source element not found for rendering.");
-            return;
-        }
-
-        var style = document.querySelector('input[name="style"]:checked').value;
-        var canvas = document.getElementById('compositeCanvas');
-        var size = 500;
-        canvas.width = size;
-        canvas.height = size;
-        var ctx = canvas.getContext('2d');
-
-        // This function combines layers and restores corners for scannability
-        function drawFinalQR(maskCanvas) {
-            // 1. Draw the original QR code onto the main canvas
-            ctx.clearRect(0, 0, size, size);
-            ctx.drawImage(sourceEl, 0, 0, size, size);
-
-            // 2. Apply the shape mask to the QR code if a mask is provided
-            if (maskCanvas) {
-                ctx.globalCompositeOperation = 'destination-in';
-                ctx.drawImage(maskCanvas, 0, 0);
-                ctx.globalCompositeOperation = 'source-over'; // reset composite operation
-            }
-
-            // 3. Restore finder patterns for scannability. This is the most critical step.
-            // We draw the corners from the original QR on top of the masked result.
-            const finderSize = 125; // Approx 25% of size for a 500px QR
-            ctx.drawImage(sourceEl, 0, 0, finderSize, finderSize, 0, 0, finderSize, finderSize); // Top-left
-            ctx.drawImage(sourceEl, size - finderSize, 0, finderSize, finderSize, size - finderSize, 0, finderSize, finderSize); // Top-right
-            ctx.drawImage(sourceEl, 0, size - finderSize, finderSize, finderSize, 0, size - finderSize, finderSize, finderSize); // Bottom-left
-        }
-
-        if (style === 'none') {
-            drawFinalQR(null); // No mask needed
-            return;
-        }
-
-        // For letter or image, we need to create a mask on a temporary canvas
-        var maskCanvas = document.createElement('canvas');
-        maskCanvas.width = size;
-        maskCanvas.height = size;
-        var mCtx = maskCanvas.getContext('2d');
-
-        if (style === 'letter') {
-            // Create a faded overlay with a letter-shaped cutout so the QR shows through inside the letter.
-            var letter = document.getElementById('letterInput').value.toUpperCase() || 'A';
-
-            // Build mask canvas: semi-opaque white, then destination-out the letter
-            mCtx.clearRect(0, 0, size, size);
-            // Slightly less opaque so the contrast between cutout and faded area is stronger
-            mCtx.fillStyle = 'rgba(255,255,255,0.78)';
-            mCtx.fillRect(0, 0, size, size);
-
-            mCtx.globalCompositeOperation = 'destination-out';
-            // Slightly larger font so the letter is clearer
-            var fontSize = Math.floor(size * 0.74);
-            mCtx.font = '900 ' + fontSize + 'px Arial, sans-serif';
-            mCtx.textAlign = 'center';
-            mCtx.textBaseline = 'middle';
-            mCtx.fillText(letter, size / 2, size / 2 + Math.floor(size * 0.02));
-            mCtx.globalCompositeOperation = 'source-over';
-
-            // Draw original QR as base
-            ctx.clearRect(0, 0, size, size);
-            ctx.drawImage(sourceEl, 0, 0, size, size);
-
-
-            // Draw the faded overlay (with letter cut-out)
-            ctx.drawImage(mCtx.canvas, 0, 0);
-
-            // Draw a subtle dark stroke around the letter so humans can see the shape clearly
-            // without filling the letter area (which would break scanning).
-            ctx.font = '900 ' + fontSize + 'px Arial, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.lineWidth = Math.max(6, Math.floor(size * 0.012));
-            ctx.strokeStyle = 'rgba(15,23,42,0.95)';
-            ctx.strokeText(letter, size / 2, size / 2 + Math.floor(size * 0.02));
-
-            // Restore finder patterns to ensure scanners can align
-            const finderSize = Math.floor(size * 0.18);
-            ctx.drawImage(sourceEl, 0, 0, finderSize, finderSize, 0, 0, finderSize, finderSize); // Top-left
-            ctx.drawImage(sourceEl, size - finderSize, 0, finderSize, finderSize, size - finderSize, 0, finderSize, finderSize); // Top-right
-            ctx.drawImage(sourceEl, 0, size - finderSize, finderSize, finderSize, 0, size - finderSize, finderSize, finderSize); // Bottom-left
-
-            return;
-        } else if (style === 'image' && uploadedLogoDataUrl) {
-            var img = new Image();
-            img.onload = function() {
-                // Create final canvas with QR and centered image
-                var finalCanvas = document.createElement('canvas');
-                finalCanvas.width = size;
-                finalCanvas.height = size;
-                var finalCtx = finalCanvas.getContext('2d');
-                
-                // Draw QR code as base
-                finalCtx.fillStyle = '#FFFFFF';
-                finalCtx.fillRect(0, 0, size, size);
-                finalCtx.drawImage(sourceEl, 0, 0, size, size);
-                
-                // Draw white background box in center for the image (increased to 200x200)
-                const logoBoxSize = 200;
-                const logoBoxX = (size - logoBoxSize) / 2;
-                const logoBoxY = (size - logoBoxSize) / 2;
-                
-                // Draw semi-transparent white background for better contrast
-                finalCtx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-                finalCtx.fillRect(logoBoxX, logoBoxY, logoBoxSize, logoBoxSize);
-                
-                // Add subtle border around the white box
-                finalCtx.strokeStyle = '#e2e8f0';
-                finalCtx.lineWidth = 2;
-                finalCtx.strokeRect(logoBoxX, logoBoxY, logoBoxSize, logoBoxSize);
-                
-                // Fit and draw image within the white box while maintaining aspect ratio
-                const hRatio = logoBoxSize / img.width;
-                const vRatio = logoBoxSize / img.height;
-                const ratio = Math.min(hRatio, vRatio);
-                const imgWidth = img.width * ratio;
-                const imgHeight = img.height * ratio;
-                const imgX = logoBoxX + (logoBoxSize - imgWidth) / 2;
-                const imgY = logoBoxY + (logoBoxSize - imgHeight) / 2;
-                
-                // Draw image with better quality
-                finalCtx.imageSmoothingEnabled = true;
-                finalCtx.imageSmoothingQuality = 'high';
-                finalCtx.drawImage(img, imgX, imgY, imgWidth, imgHeight);
-                
-                // Restore finder patterns for scannability
-                const finderSize = 125;
-                finalCtx.drawImage(sourceEl, 0, 0, finderSize, finderSize, 0, 0, finderSize, finderSize); // Top-left
-                finalCtx.drawImage(sourceEl, size - finderSize, 0, finderSize, finderSize, size - finderSize, 0, finderSize, finderSize); // Top-right
-                finalCtx.drawImage(sourceEl, 0, size - finderSize, finderSize, finderSize, 0, size - finderSize, finderSize, finderSize); // Bottom-left
-                
-                // Update the canvas with the final result
-                var canvas = document.getElementById('compositeCanvas');
-                canvas.width = size;
-                canvas.height = size;
-                var ctx = canvas.getContext('2d');
-                ctx.drawImage(finalCanvas, 0, 0);
-                
-                // Show the styled result
-                document.getElementById('qrcode').style.display = 'none';
-                canvas.style.display = 'block';
-                document.getElementById('actions').style.display = 'flex';
+                if ((qrCanvas && qrCanvas.width > 0) || (qrImg && qrImg.complete && qrImg.naturalWidth > 0)) {
+                    renderShapedQR();
+                    qrContainer.style.display = "none";
+                    canvas.style.display = "block";
+                    actions.style.display = "flex";
+                } else if (attempts < 20) {
+                    attempts++;
+                    setTimeout(checkQRReady, 100);
+                }
             };
-            img.src = uploadedLogoDataUrl;
-        } else {
-            // Fallback for image style if no image is uploaded
-            drawFinalQR(null);
+            setTimeout(checkQRReady, 100);
+        } catch (e) {
+            console.error('QR generation error:', e);
         }
     }
 
     function onStyleChange() {
-        var style = document.querySelector('input[name="style"]:checked').value;
-        var styleInfo = document.getElementById('styleInfo');
-        
-        // Update style info text
-        if (style === 'none') {
-            styleInfo.textContent = 'Standard QR code format - highly compatible with all scanners';
-        } else if (style === 'letter') {
-            styleInfo.textContent = 'QR code shaped like a letter - creative but may reduce scan reliability';
-        } else if (style === 'image') {
-            styleInfo.textContent = 'QR code with a logo in the center - upload your image';
+        const style = document.querySelector('input[name="style"]:checked').value;
+        const letterDiv = document.getElementById("letterControls");
+        const imageDiv = document.getElementById("imageControls");
+        const styleInfo = document.getElementById("styleInfo");
+
+        if (style === "letter") {
+            letterDiv.classList.remove("hidden-section");
+            imageDiv.classList.add("hidden-section");
+            styleInfo.textContent = "Letter Overlay - A custom letter will be placed on the center of the QR code.";
+        } else if (style === "image") {
+            letterDiv.classList.add("hidden-section");
+            imageDiv.classList.remove("hidden-section");
+            styleInfo.textContent = "Logo/Image - Your selected image will be placed in the center.";
+        } else {
+            letterDiv.classList.add("hidden-section");
+            imageDiv.classList.add("hidden-section");
+            styleInfo.textContent = "Standard QR code format - highly compatible with all scanners";
         }
-        
-        document.getElementById('letterControls').style.display = style === 'letter' ? 'flex' : 'none';
-        document.getElementById('imageControls').style.display = style === 'image' ? 'flex' : 'none';
+
         generateQR();
     }
 
-    function onLogoChange(e) {
-        var file = e.target.files[0];
-        if (!file) {
-            uploadedLogoDataUrl = null;
-            generateQR();
+    function onLogoChange(event) {
+        var file = event.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedLogoDataUrl = e.target.result;
+                generateQR();
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function renderShapedQR() {
+        const style = document.querySelector('input[name="style"]:checked').value;
+        const canvas = document.getElementById('compositeCanvas');
+        const ctx = canvas.getContext('2d');
+        const qrContainer = document.getElementById('qrcode');
+        
+        const qrCanvas = qrContainer.querySelector('canvas');
+        const qrImg = qrContainer.querySelector('img');
+        const source = qrCanvas || qrImg;
+        
+        if (!source) {
             return;
         }
-        var reader = new FileReader();
-        reader.onload = function(evt) {
-            uploadedLogoDataUrl = evt.target.result;
-            generateQR();
+
+        canvas.width = 400;
+        canvas.height = 400;
+        
+        // Draw white base
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, 400, 400);
+        
+        // Draw QR base
+        ctx.drawImage(source, 0, 0, 400, 400);
+
+        if (style === "letter") {
+            const letter = document.getElementById("letterInput").value.trim().toUpperCase() || "A";
+            
+            // Create mask canvas for spotlight effect
+            const maskCanvas = document.createElement('canvas');
+            maskCanvas.width = 400;
+            maskCanvas.height = 400;
+            const mCtx = maskCanvas.getContext('2d');
+
+            // Fill with semi-transparent white (The "Faded" area)
+            mCtx.fillStyle = 'rgba(255, 255, 255, 0.78)'; 
+            mCtx.fillRect(0, 0, 400, 400);
+
+            // Cut out the Letter (The "Clear/Dark" area)
+            mCtx.globalCompositeOperation = 'destination-out';
+
+            // SHAPE MODE: Letter
+            const fontSize = 296;
+            mCtx.font = '900 ' + fontSize + 'px Arial, sans-serif'; 
+            mCtx.textAlign = 'center';
+            mCtx.textBaseline = 'middle';
+            mCtx.fillText(letter, 200, 216);
+            
+            mCtx.globalCompositeOperation = 'source-over';
+
+            // Apply the faded overlay (with letter cut-out)
+            ctx.drawImage(maskCanvas, 0, 0);
+
+            // Draw a subtle dark stroke around the letter for visibility
+            ctx.font = '900 ' + fontSize + 'px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.lineWidth = Math.max(6, 5);
+            ctx.strokeStyle = 'rgba(15, 23, 42, 0.95)';
+            ctx.strokeText(letter, 200, 216);
+
+            // CRITICAL: Restore Finder Patterns (Full Contrast)
+            // This ensures the 3 corner position markers are 100% visible for scanner alignment
+            const finderSize = 100; 
+            ctx.drawImage(source, 0, 0, finderSize, finderSize, 0, 0, finderSize, finderSize);
+            ctx.drawImage(source, 400 - finderSize, 0, finderSize, finderSize, 400 - finderSize, 0, finderSize, finderSize);
+            ctx.drawImage(source, 0, 400 - finderSize, finderSize, finderSize, 0, 400 - finderSize, finderSize, finderSize);
+            
+        } else if (style === "image" && uploadedLogoDataUrl) {
+            const imgObj = new Image();
+            imgObj.onerror = function() {
+                console.error('Failed to load image');
+            };
+            imgObj.onload = function() {
+                // Draw semi-transparent white background box in center for better image visibility
+                const logoBoxSize = 140;
+                const logoBoxX = (400 - logoBoxSize) / 2;
+                const logoBoxY = (400 - logoBoxSize) / 2;
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
+                ctx.fillRect(logoBoxX, logoBoxY, logoBoxSize, logoBoxSize);
+                
+                // Fit and draw image within the box while maintaining aspect ratio
+                const hRatio = logoBoxSize / imgObj.width;
+                const vRatio = logoBoxSize / imgObj.height;
+                const ratio = Math.min(hRatio, vRatio);
+                const imgWidth = imgObj.width * ratio;
+                const imgHeight = imgObj.height * ratio;
+                const imgX = logoBoxX + (logoBoxSize - imgWidth) / 2;
+                const imgY = logoBoxY + (logoBoxSize - imgHeight) / 2;
+                
+                // Draw image with best quality
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(imgObj, imgX, imgY, imgWidth, imgHeight);
+                
+                // Restore finder patterns for scannability
+                const finderSize = 100;
+                ctx.drawImage(source, 0, 0, finderSize, finderSize, 0, 0, finderSize, finderSize);
+                ctx.drawImage(source, 400 - finderSize, 0, finderSize, finderSize, 400 - finderSize, 0, finderSize, finderSize);
+                ctx.drawImage(source, 0, 400 - finderSize, finderSize, finderSize, 0, 400 - finderSize, finderSize, finderSize);
+            };
+            imgObj.src = uploadedLogoDataUrl;
         }
-        reader.readAsDataURL(file);
     }
 
     function downloadQR() {
-        var canvas = document.getElementById('compositeCanvas');
-        var link = document.createElement('a');
-        link.download = 'qrcode.png';
+        const canvas = document.getElementById('compositeCanvas');
+        const link = document.createElement('a');
         link.href = canvas.toDataURL('image/png');
+        link.download = 'qr-code.png';
         link.click();
     }
 
-    // Print Modal Functions
     function openPrintModal() {
-        var canvas = document.getElementById('compositeCanvas');
-        if (!canvas || canvas.width === 0 || canvas.height === 0) { 
-            alert('Please generate a QR code first'); 
-            return; 
-        }
-        document.getElementById('printSizeModal').style.display = 'flex';
+        document.getElementById("printSizeModal").classList.add("show");
     }
 
     function closePrintModal() {
-        document.getElementById('printSizeModal').style.display = 'none';
-    }
-
-    function syncModalSize() {
-        var width = document.getElementById('modalPrintWidth').value;
-        document.getElementById('modalPrintHeight').value = width;
+        document.getElementById("printSizeModal").classList.remove("show");
     }
 
     function setPresetSize(width, height) {
-        document.getElementById('modalPrintWidth').value = width;
-        document.getElementById('modalPrintHeight').value = height;
+        document.getElementById("modalPrintWidth").value = width;
+        document.getElementById("modalPrintHeight").value = height;
+    }
+
+    function syncModalSize() {
+        const width = document.getElementById("modalPrintWidth").value;
+        document.getElementById("modalPrintHeight").value = width;
     }
 
     function confirmPrint() {
-        var printWidthCm = parseFloat(document.getElementById('modalPrintWidth').value) || 5;
-        var printHeightCm = parseFloat(document.getElementById('modalPrintHeight').value) || 5;
+        const canvas = document.getElementById('compositeCanvas');
+        const width = parseFloat(document.getElementById("modalPrintWidth").value);
+        const height = parseFloat(document.getElementById("modalPrintHeight").value);
         
-        closePrintModal();
-        printQRWithSize(printWidthCm, printHeightCm);
+        const printWindow = window.open('', '', 'width=800,height=600');
+        printWindow.document.write('<html><head><title>Print QR Code</title></head><body style="margin: 0; padding: 1cm; text-align: center;"><img src="' + canvas.toDataURL() + '" style="width: ' + width + 'cm; height: ' + height + 'cm; border: 1px solid #ccc;"></body></html>');
+        printWindow.document.close();
+        setTimeout(function() {
+            printWindow.print();
+        }, 250);
     }
-
-    function printQRWithSize(printWidthCm, printHeightCm) {
-        var canvas = document.getElementById('compositeCanvas');
-        
-        try {
-            var src = canvas.toDataURL('image/png');
-            
-            var win = window.open('', '_blank');
-            if (!win) {
-                alert('Popup blocked! Please allow popups for this site to print.');
-                return;
-            }
-            
-            var htmlContent = `
-                <html>
-                <head>
-                    <title>Print QR Code</title>
-                    <style>
-                        @media print { 
-                            @page { margin: 1cm; } 
-                        }
-                        body {
-                            text-align: center;
-                            font-family: sans-serif;
-                            margin: 20px;
-                        }
-                        h3 {
-                            margin-bottom: 15px;
-                        }
-                        img {
-                            width: ${printWidthCm}cm;
-                            height: ${printHeightCm}cm;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h3>QR Code</h3>
-                    <img src="${src}" onload="window.focus(); setTimeout(() => { window.print(); }, 200);">
-                </body>
-                </html>
-            `;
-            
-            win.document.write(htmlContent);
-            win.document.close();
-        } catch (e) {
-            console.error('Print error:', e);
-            alert('Error preparing print. Please try again.');
-        }
-    }
-
-    // Close modal on clicking outside
-    document.getElementById('printSizeModal').addEventListener('click', function(e) {
-        if (e.target === this) closePrintModal();
-    });
 </script>
+
 {% endblock %}

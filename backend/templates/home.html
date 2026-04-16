@@ -4,119 +4,119 @@
 {% block content %}
 
 <!-- Hero Section -->
-<section class="hero-section">
-    <div class="hero-container container">
-        <div class="hero-text">
-            <h1>Effortless Asset Management</h1>
-            <p class="subheadline">
+<section class="bg-blue-50/50">
+    <div class="container mx-auto px-6 py-16 md:py-24 grid md:grid-cols-2 items-center gap-12">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-900 mb-4 leading-tight">Effortless Asset Management</h1>
+            <p class="text-lg text-slate-600 mb-8 max-w-xl mx-auto">
                 Track assets with powerful QR code technology.<br>
                 Add once. Generate QR. Scan anytime. Stay organized forever.
             </p>
-            <div class="hero-buttons">
-                <a href="/register" class="btn-primary-hero">Get Started Free</a>
-                <a href="#features" class="btn-secondary">Learn More</a>
+            <div class="flex gap-4 justify-center">
+                <a href="/register" class="bg-primary text-white py-3 px-6 rounded-lg font-semibold shadow-lg hover:bg-primary-hover transform hover:-translate-y-0.5 transition-all">Get Started Free</a>
+                <a href="#features" class="bg-white text-slate-700 py-3 px-6 rounded-lg font-semibold shadow-lg border border-slate-200 hover:bg-slate-50 transform hover:-translate-y-0.5 transition-all">Learn More</a>
             </div>
         </div>
-        <div class="hero-image">
-            <img src="{{ url_for('static', filename='images/asset-management.png') }}" alt="A dashboard showing asset management on a laptop and tablet">
+        <div class="flex justify-center">
+            <img src="{{ url_for('static', filename='images/asset-management.png') }}" alt="A dashboard showing asset management on a laptop and tablet" class="max-w-full h-auto rounded-2xl shadow-2xl">
         </div>
     </div>
 </section>
 
 <!-- Features Section -->
-<section class="features-section" id="features">
-    <div class="container">
-        <div class="section-header">
-            <h2>Powerful Features for Real-World Use</h2>
-            <p>Everything you need to manage assets efficiently and securely</p>
+<section class="py-20 md:py-24 bg-white" id="features">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-3">Powerful Features for Real-World Use</h2>
+            <p class="text-lg text-slate-500 max-w-2xl mx-auto">Everything you need to manage assets efficiently and securely</p>
         </div>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="bg-slate-50/50 border border-slate-100 rounded-2xl p-8 text-center shadow-lg hover:shadow-blue-100 hover:-translate-y-2 transition-transform duration-300">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-blue-400 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-lg">
                     <i class="fas fa-qrcode"></i>
                 </div>
-                <h3>Auto QR Code Generation</h3>
-                <p>Add any asset — get a printable QR code instantly. Stick it on chairs, CPUs, projectors, and more.</p>
+                <h3 class="text-xl font-semibold text-slate-800 mb-2">Auto QR Code Generation</h3>
+                <p class="text-slate-600">Add any asset — get a printable QR code instantly. Stick it on chairs, CPUs, projectors, and more.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
+            <div class="bg-slate-50/50 border border-slate-100 rounded-2xl p-8 text-center shadow-lg hover:shadow-blue-100 hover:-translate-y-2 transition-transform duration-300">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-blue-400 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-lg">
                     <i class="fas fa-mobile-alt"></i>
                 </div>
-                <h3>Scan with Any Phone</h3>
-                <p>Use your phone camera to instantly view location, warranty, status, history, and report issues.</p>
+                <h3 class="text-xl font-semibold text-slate-800 mb-2">Scan with Any Phone</h3>
+                <p class="text-slate-600">Use your phone camera to instantly view location, warranty, status, history, and report issues.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
+            <div class="bg-slate-50/50 border border-slate-100 rounded-2xl p-8 text-center shadow-lg hover:shadow-blue-100 hover:-translate-y-2 transition-transform duration-300">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-blue-400 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-lg">
                     <i class="fas fa-bell"></i>
                 </div>
-                <h3>Smart Alerts & Reports</h3>
-                <p>Get notified about warranty expiry, maintenance due, or misplaced items. Export reports anytime.</p>
+                <h3 class="text-xl font-semibold text-slate-800 mb-2">Smart Alerts & Reports</h3>
+                <p class="text-slate-600">Get notified about warranty expiry, maintenance due, or misplaced items. Export reports anytime.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
+            <div class="bg-slate-50/50 border border-slate-100 rounded-2xl p-8 text-center shadow-lg hover:shadow-blue-100 hover:-translate-y-2 transition-transform duration-300">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-blue-400 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-lg">
                     <i class="fas fa-users"></i>
                 </div>
-                <h3>Multi-User Access</h3>
-                <p>Admins, staff, and departments — everyone sees what they need with secure role-based access.</p>
+                <h3 class="text-xl font-semibold text-slate-800 mb-2">Multi-User Access</h3>
+                <p class="text-slate-600">Admins, staff, and departments — everyone sees what they need with secure role-based access.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
+            <div class="bg-slate-50/50 border border-slate-100 rounded-2xl p-8 text-center shadow-lg hover:shadow-blue-100 hover:-translate-y-2 transition-transform duration-300">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-blue-400 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-lg">
                     <i class="fas fa-file-excel"></i>
                 </div>
-                <h3>Bulk Import</h3>
-                <p>Import hundreds of assets from Excel in seconds. Perfect for onboarding labs or offices.</p>
+                <h3 class="text-xl font-semibold text-slate-800 mb-2">Bulk Import</h3>
+                <p class="text-slate-600">Import hundreds of assets from Excel in seconds. Perfect for onboarding labs or offices.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
+            <div class="bg-slate-50/50 border border-slate-100 rounded-2xl p-8 text-center shadow-lg hover:shadow-blue-100 hover:-translate-y-2 transition-transform duration-300">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-blue-400 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-lg">
                     <i class="fas fa-shield-alt"></i>
                 </div>
-                <h3>Secure & Reliable</h3>
-                <p>Data encrypted. Regular backups. Built for institutions that value privacy and trust.</p>
+                <h3 class="text-xl font-semibold text-slate-800 mb-2">Secure & Reliable</h3>
+                <p class="text-slate-600">Data encrypted. Regular backups. Built for institutions that value privacy and trust.</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- How It Works -->
-<section class="how-it-works-section" id="how-it-works">
-    <div class="container">
-        <div class="section-header">
-            <h2>How It Works</h2>
-            <p>Simple 4-step process to go from chaos to control</p>
+<section class="py-20 md:py-24 bg-secondary" id="how-it-works">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-3">How It Works</h2>
+            <p class="text-lg text-slate-500 max-w-2xl mx-auto">Simple 4-step process to go from chaos to control</p>
         </div>
-        <div class="steps-container">
-            <div class="step">
-                <div class="step-number">1</div>
-                <h3>Register & Add Assets</h3>
-                <p>Create your organization account and start adding items — one by one or via bulk upload.</p>
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12 text-center">
+            <div>
+                <div class="w-12 h-12 border-2 border-primary text-primary rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-xl">1</div>
+                <h3 class="text-lg font-semibold mb-2 text-text-color">Register & Add Assets</h3>
+                <p class="text-text-light">Create your organization account and start adding items — one by one or via bulk upload.</p>
             </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <h3>Generate QR Codes</h3>
-                <p>System auto-generates unique QR codes. Print and attach to physical assets.</p>
+            <div>
+                <div class="w-12 h-12 border-2 border-primary text-primary rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-xl">2</div>
+                <h3 class="text-lg font-semibold mb-2 text-text-color">Generate QR Codes</h3>
+                <p class="text-text-light">System auto-generates unique QR codes. Print and attach to physical assets.</p>
             </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <h3>Stick & Scan</h3>
-                <p>Place QR stickers on equipment. Anyone can scan with their phone.</p>
+            <div>
+                <div class="w-12 h-12 border-2 border-primary text-primary rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-xl">3</div>
+                <h3 class="text-lg font-semibold mb-2 text-text-color">Stick & Scan</h3>
+                <p class="text-text-light">Place QR stickers on equipment. Anyone can scan with their phone.</p>
             </div>
-            <div class="step">
-                <div class="step-number">4</div>
-                <h3>View & Update Instantly</h3>
-                <p>See full details, update status, report issues — all in real time.</p>
+            <div>
+                <div class="w-12 h-12 border-2 border-primary text-primary rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-xl">4</div>
+                <h3 class="text-lg font-semibold mb-2 text-text-color">View & Update Instantly</h3>
+                <p class="text-text-light">See full details, update status, report issues — all in real time.</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- Final CTA -->
-<section class="features-section" style="background: linear-gradient(135deg, #5E72E4, #825EE4); color: white;">
-    <div class="container text-center">
-        <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Ready to Take Control of Your Assets?</h2>
-        <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9;">
+<section class="py-20 md:py-24 bg-gradient-to-r from-primary to-indigo-600 text-white">
+    <div class="container mx-auto px-6 text-center">
+        <h2 class="text-4xl font-bold mb-4">Ready to Take Control of Your Assets?</h2>
+        <p class="text-xl mb-8 opacity-90 max-w-3xl mx-auto">
             Join hundreds of colleges and offices already saving time and reducing loss.
         </p>
-        <a href="/register" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;">
+        <a href="/register" class="bg-white text-primary py-4 px-8 rounded-lg font-bold text-lg shadow-xl hover:bg-slate-100 transform hover:scale-105 transition-all duration-300">
             Start Free — No Credit Card Required
         </a>
     </div>
