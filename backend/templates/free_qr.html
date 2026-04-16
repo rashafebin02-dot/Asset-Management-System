@@ -153,8 +153,8 @@
         try {
             new QRCode(qrContainer, {
                 text: text,
-                width: 400,
-                height: 400,
+                width: 300,
+                height: 300,
                 colorDark: "#1e293b",
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
@@ -230,38 +230,38 @@
             return;
         }
 
-        canvas.width = 400;
-        canvas.height = 400;
+        canvas.width = 300;
+        canvas.height = 300;
         
         // Draw white base
         ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, 400, 400);
+        ctx.fillRect(0, 0, 300, 300);
         
         // Draw QR base
-        ctx.drawImage(source, 0, 0, 400, 400);
+        ctx.drawImage(source, 0, 0, 300, 300);
 
         if (style === "letter") {
             const letter = document.getElementById("letterInput").value.trim().toUpperCase() || "A";
             
             // Create mask canvas for spotlight effect
             const maskCanvas = document.createElement('canvas');
-            maskCanvas.width = 400;
-            maskCanvas.height = 400;
+            maskCanvas.width = 300;
+            maskCanvas.height = 300;
             const mCtx = maskCanvas.getContext('2d');
 
             // Fill with semi-transparent white (The "Faded" area)
             mCtx.fillStyle = 'rgba(255, 255, 255, 0.78)'; 
-            mCtx.fillRect(0, 0, 400, 400);
+            mCtx.fillRect(0, 0, 300, 300);
 
             // Cut out the Letter (The "Clear/Dark" area)
             mCtx.globalCompositeOperation = 'destination-out';
 
             // SHAPE MODE: Letter
-            const fontSize = 296;
+            const fontSize = 222;
             mCtx.font = '900 ' + fontSize + 'px Arial, sans-serif'; 
             mCtx.textAlign = 'center';
             mCtx.textBaseline = 'middle';
-            mCtx.fillText(letter, 200, 216);
+            mCtx.fillText(letter, 150, 162);
             
             mCtx.globalCompositeOperation = 'source-over';
 
@@ -274,14 +274,14 @@
             ctx.textBaseline = 'middle';
             ctx.lineWidth = Math.max(6, 5);
             ctx.strokeStyle = 'rgba(15, 23, 42, 0.95)';
-            ctx.strokeText(letter, 200, 216);
+            ctx.strokeText(letter, 150, 162);
 
             // CRITICAL: Restore Finder Patterns (Full Contrast)
             // This ensures the 3 corner position markers are 100% visible for scanner alignment
-            const finderSize = 100; 
+            const finderSize = 75; 
             ctx.drawImage(source, 0, 0, finderSize, finderSize, 0, 0, finderSize, finderSize);
-            ctx.drawImage(source, 400 - finderSize, 0, finderSize, finderSize, 400 - finderSize, 0, finderSize, finderSize);
-            ctx.drawImage(source, 0, 400 - finderSize, finderSize, finderSize, 0, 400 - finderSize, finderSize, finderSize);
+            ctx.drawImage(source, 300 - finderSize, 0, finderSize, finderSize, 300 - finderSize, 0, finderSize, finderSize);
+            ctx.drawImage(source, 0, 300 - finderSize, finderSize, finderSize, 0, 300 - finderSize, finderSize, finderSize);
             
         } else if (style === "image" && uploadedLogoDataUrl) {
             const imgObj = new Image();
@@ -290,9 +290,9 @@
             };
             imgObj.onload = function() {
                 // Draw semi-transparent white background box in center for better image visibility
-                const logoBoxSize = 140;
-                const logoBoxX = (400 - logoBoxSize) / 2;
-                const logoBoxY = (400 - logoBoxSize) / 2;
+                const logoBoxSize = 105;
+                const logoBoxX = (300 - logoBoxSize) / 2;
+                const logoBoxY = (300 - logoBoxSize) / 2;
                 
                 ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
                 ctx.fillRect(logoBoxX, logoBoxY, logoBoxSize, logoBoxSize);
@@ -312,10 +312,10 @@
                 ctx.drawImage(imgObj, imgX, imgY, imgWidth, imgHeight);
                 
                 // Restore finder patterns for scannability
-                const finderSize = 100;
+                const finderSize = 75;
                 ctx.drawImage(source, 0, 0, finderSize, finderSize, 0, 0, finderSize, finderSize);
-                ctx.drawImage(source, 400 - finderSize, 0, finderSize, finderSize, 400 - finderSize, 0, finderSize, finderSize);
-                ctx.drawImage(source, 0, 400 - finderSize, finderSize, finderSize, 0, 400 - finderSize, finderSize, finderSize);
+                ctx.drawImage(source, 300 - finderSize, 0, finderSize, finderSize, 300 - finderSize, 0, finderSize, finderSize);
+                ctx.drawImage(source, 0, 300 - finderSize, finderSize, finderSize, 0, 300 - finderSize, finderSize, finderSize);
             };
             imgObj.src = uploadedLogoDataUrl;
         }
