@@ -171,219 +171,241 @@
     }
 </style>
 
-<div class="admin-dashboard">
+<div class="flex flex-col min-h-screen bg-slate-100">
     <!-- Header -->
-    <header class="admin-header">
-        <div class="header-left">
-            <i class="fas fa-qrcode"></i>
-            <span>AssetMS User</span>
+    <header class="bg-white flex flex-col md:flex-row justify-between items-start md:items-center px-4 md:px-6 py-3 md:py-4 shadow-sm z-20 gap-3 md:gap-0">
+        <div class="flex items-center justify-between w-full md:w-auto gap-3">
+            <div class="header-left flex items-center gap-3 font-semibold text-indigo-600 text-base md:text-lg">
+                <i class="fas fa-qrcode"></i>
+                <span class="hidden sm:inline">AssetMS User</span>
+            </div>
+            <button id="mobileMenuBtn" class="md:hidden bg-slate-100 hover:bg-slate-200 p-2 rounded-lg transition-colors">
+                <i class="fas fa-bars text-slate-800 text-lg"></i>
+            </button>
         </div>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <span>Welcome, {{ username }}</span>
-            <a href="/logout" style="color: #ef4444; text-decoration: none;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <div class="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 w-full md:w-auto text-sm md:text-base">
+            <span class="text-slate-700">Welcome, <strong>{{ username }}</strong></span>
+            <a href="/logout" class="text-red-500 hover:text-red-700 transition-colors inline-flex items-center gap-1">
+                <i class="fas fa-sign-out-alt"></i> <span class="hidden md:inline">Logout</span>
+            </a>
         </div>
     </header>
 
-    <div class="admin-layout">
+    <div class="flex flex-1 overflow-hidden relative">
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 md:hidden hidden z-30"></div>
+
         <!-- Sidebar -->
-        <aside class="admin-sidebar">
-            <ul class="sidebar-menu">
-                <li class="active" id="nav-add"><a href="#" onclick="showTab('add')"><i class="fas fa-plus-circle"></i> Add Assets</a></li>
-                <li id="nav-list"><a href="#" onclick="showTab('list')"><i class="fas fa-list"></i> My Assets</a></li>
-                <li id="nav-expired"><a href="#" onclick="showTab('expired')"><i class="fas fa-history"></i> Expired Assets</a></li>
+        <aside id="mobileSidebar" class="fixed md:static left-0 top-0 w-56 md:w-64 bg-slate-900 text-slate-400 flex flex-col border-r border-slate-800 h-screen md:h-auto z-40 md:z-auto transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+            <ul class="sidebar-menu list-none p-4 m-0 flex flex-col gap-2 overflow-y-auto">
+                <li class="active" id="nav-add">
+                    <a href="#" onclick="showTab('add', event)" class="py-3 px-4 flex items-center gap-3 rounded-lg font-medium text-sm transition-all hover:bg-slate-800 hover:text-white cursor-pointer block w-full">
+                        <i class="fas fa-plus-circle w-5 text-center"></i> <span>Add Assets</span>
+                    </a>
+                </li>
+                <li id="nav-list">
+                    <a href="#" onclick="showTab('list', event)" class="py-3 px-4 flex items-center gap-3 rounded-lg font-medium text-sm transition-all hover:bg-slate-800 hover:text-white cursor-pointer block w-full">
+                        <i class="fas fa-list w-5 text-center"></i> <span>My Assets</span>
+                    </a>
+                </li>
+                <li id="nav-expired">
+                    <a href="#" onclick="showTab('expired', event)" class="py-3 px-4 flex items-center gap-3 rounded-lg font-medium text-sm transition-all hover:bg-slate-800 hover:text-white cursor-pointer block w-full">
+                        <i class="fas fa-history w-5 text-center"></i> <span>Expired</span>
+                    </a>
+                </li>
             </ul>
         </aside>
 
         <!-- Main Content -->
-        <main class="main-area">
-            <h1 class="page-title">User Dashboard</h1>
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto w-full bg-slate-100">
+            <h1 class="page-title text-2xl md:text-3xl font-bold text-slate-800 mb-6 md:mb-8 m-0">User Dashboard</h1>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="flash-message {{ category }}" style="padding: 10px; margin-bottom: 15px; border-radius: 5px; background: #e0f2fe; color: #0284c7;">
+                        <div class="p-3 md:p-4 mb-4 rounded-lg font-medium text-sm {% if category == 'success' %}bg-green-100 text-green-700 border border-green-300{% elif category == 'error' %}bg-red-100 text-red-700 border border-red-300{% endif %}">
                             {{ message }}
                         </div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
 
-            <div class="content-grid">
+            <div class="flex flex-col gap-6 md:gap-8">
                 <!-- Add Asset Form -->
-                <div class="card" id="section-add">
-                    <h3>Add New Asset & Generate QR</h3>
-                    <div style="margin-top: 1rem;">
-                        <h4>Manual Entry</h4>
-                        <form action="/add-asset" method="POST" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 1rem;">
-                            <div style="grid-column: span 2;">
-                                <input type="text" name="asset_name" placeholder="Product Name *" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
-                            </div>
-                            
-                            <div style="grid-column: span 2;">
-                                <select name="category_id" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
-                                    <option value="" disabled selected>Select Category *</option>
-                                    {% for cat in categories %}
-                                    <option value="{{ cat.Category_id }}">{{ cat.Category_name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            
-                            <input type="text" name="manufacturer" placeholder="Manufacturer" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                            <input type="text" name="vendor" placeholder="Vendor" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                            
-                            <input type="number" step="0.01" name="price" placeholder="Price" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                            <input type="text" name="bill_no" placeholder="Bill No" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                            
-                            <div>
-                                <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 2px;">Purchase Date</label>
-                                <input type="date" name="purchase_date" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
-                            </div>
-                            <div>
-                                <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 2px;">Warranty Expiry *</label>
-                                <input type="date" name="expiry_date" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
-                            </div>
-
-                            <input type="text" name="warranty_period" placeholder="Warranty Period (e.g. 2 Years)" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                            <input type="text" name="custodian" placeholder="Custodian" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                            <input type="text" name="department" placeholder="Department" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                            <input type="text" name="location" placeholder="Location" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                            <input type="text" name="stock_register_no" placeholder="Stock Register No" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                            <textarea name="description" placeholder="Description / Remarks" rows="1" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
-                            
-                            <div style="grid-column: span 2;">
-                                <button type="submit" class="btn-primary" style="width: 100%;">Add Asset & Generate QR</button>
-                            </div>
-                        </form>
-                        
-                        <hr style="border: 0; border-top: 1px solid #eee; margin: 1.5rem 0;">
-                        
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
-                            <h4 style="margin-top: 0; color: #1e293b; display: flex; align-items: center; gap: 10px;">
-                                <i class="fas fa-file-excel" style="color: #10b981;"></i> Bulk Upload (Excel)
-                            </h4>
-                            <p style="color: #64748b; margin: 10px 0 15px 0; font-size: 0.95rem;">Upload multiple assets at once using an Excel file. Download the sample file to see the required format.</p>
-                            <form action="/upload-bulk" method="POST" enctype="multipart/form-data" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                                <div style="flex: 1; min-width: 250px; display: flex; align-items: center; gap: 10px; background: white; padding: 10px 15px; border: 2px solid #e2e8f0; border-radius: 6px;">
-                                    <i class="fas fa-paperclip" style="color: var(--primary-color);"></i>
-                                    <input type="file" name="file" accept=".xlsx, .xls" required style="flex: 1; border: none; outline: none; font-size: 0.9rem;">
+                <div class="bg-white rounded-lg shadow p-4 md:p-6" id="section-add">
+                    <h3 class="text-lg md:text-xl font-semibold text-slate-800 mb-4">Add New Asset & Generate QR</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-4">Manual Entry</h4>
+                            <form action="/add-asset" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
+                                <div class="md:col-span-2">
+                                    <input type="text" name="asset_name" placeholder="Product Name *" required class="w-full px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all">
                                 </div>
-                                <button type="submit" class="btn-secondary" style="padding: 10px 20px; white-space: nowrap;">
-                                    <i class="fas fa-cloud-upload-alt"></i> Upload
-                                </button>
-                                <a href="/static/prjct smple.xlsx" download class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; white-space: nowrap;">
-                                    <i class="fas fa-download"></i> Sample File
-                                </a>
+                                
+                                <div class="md:col-span-2">
+                                    <select name="category_id" required class="w-full px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all">
+                                        <option value="" disabled selected>Select Category *</option>
+                                        {% for cat in categories %}
+                                        <option value="{{ cat.Category_id }}">{{ cat.Category_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <input type="text" name="manufacturer" placeholder="Manufacturer" class="px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all">
+                                <input type="text" name="vendor" placeholder="Vendor" class="px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all">
+                                
+                                <input type="number" step="0.01" name="price" placeholder="Price" class="px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all">
+                                <input type="text" name="bill_no" placeholder="Bill No" class="px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all">
+                                
+                                <div>
+                                    <label class="text-xs text-slate-600 block mb-1 font-medium">Purchase Date</label>
+                                    <input type="date" name="purchase_date" class="w-full px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-slate-600 block mb-1 font-medium">Warranty Expiry *</label>
+                                    <input type="date" name="expiry_date" required class="w-full px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all">
+                                </div>
+
+                                <input type="text" name="warranty_period" placeholder="Warranty Period (e.g. 2 Years)" class="px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all">
+                                <input type="text" name="custodian" placeholder="Custodian" class="px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all">
+                                <input type="text" name="department" placeholder="Department" class="px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all">
+                                <input type="text" name="location" placeholder="Location" class="px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all">
+                                <input type="text" name="stock_register_no" placeholder="Stock Register No" class="px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all">
+                                <textarea name="description" placeholder="Description / Remarks" rows="2" class="md:col-span-2 px-3 py-2 md:py-2.5 border border-slate-300 rounded-lg outline-none text-sm focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all"></textarea>
+                                
+                                <div class="md:col-span-2">
+                                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-medium transition-colors">Add Asset & Generate QR</button>
+                                </div>
                             </form>
+                            
+                            <div class="border-t border-slate-200 pt-6 mt-6">
+                                <div class="bg-blue-50 border-l-4 border-blue-600 p-4 rounded">
+                                    <h4 class="font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-file-excel text-green-600"></i> Bulk Upload (Excel)
+                                    </h4>
+                                    <p class="text-slate-600 text-xs md:text-sm mb-4">Upload multiple assets at once using an Excel file. Download the sample file to see the required format.</p>
+                                    <form action="/upload-bulk" method="POST" enctype="multipart/form-data" class="flex flex-col md:flex-row gap-2 items-stretch md:items-center">
+                                        <div class="flex-1 flex items-center gap-2 bg-white px-3 py-2 border-2 border-slate-300 rounded-lg">
+                                            <i class="fas fa-paperclip text-indigo-600"></i>
+                                            <input type="file" name="file" accept=".xlsx, .xls" required class="flex-1 border-none outline-none text-xs md:text-sm">
+                                        </div>
+                                        <button type="submit" class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap">
+                                            <i class="fas fa-cloud-upload-alt"></i> Upload
+                                        </button>
+                                        <a href="/static/prjct smple.xlsx" download class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap text-center">
+                                            <i class="fas fa-download"></i> Sample
+                                        </a>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Asset List -->
-                <div class="card" id="section-list" style="display: none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h3>Asset List</h3>
-                        <button class="btn-primary" onclick="openPrintModal(null, 'multiple')"><i class="fas fa-print"></i> Print Selected</button>
+                <div class="bg-white rounded-lg shadow p-4 md:p-6" id="section-list" style="display: none;">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
+                        <h3 class="text-lg md:text-xl font-semibold text-slate-800 m-0">My Assets</h3>
+                        <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors w-full md:w-auto" onclick="openPrintModal(null, 'multiple')"><i class="fas fa-print"></i> Print Selected</button>
                     </div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
-                                <th>Asset Details</th>
-                                <th>Category</th>
-                                <th style="text-align: center;">QR Code</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for asset in assets %}
-                            <tr>
-                                <td><input type="checkbox" class="qr-checkbox"></td>
-                                <td>
-                                    <div style="font-weight: 600; color: #334155;">{{ asset.Product_name }}</div>
-                                    <div style="font-size: 0.8rem; color: #64748b; font-family: monospace;">{{ asset.Qr_code_value }}</div>
-                                </td>
-                                <td>{{ asset.Category_name }}</td>
-                                <td style="text-align: center;">
-                                    <div class="qr-code-target" id="qr-{{ loop.index }}" data-qr="ID:{{ asset.Qr_code_value|string|replace('"', '') }}&#10;Item:{{ asset.Product_name|string|replace('"', '')|truncate(18, True, '') }}&#10;Cat:{{ asset.Category_name|string|replace('"', '')|truncate(12, True, '') }}{% if asset.Manufacturer %}&#10;Mfr:{{ asset.Manufacturer|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Vendor %}&#10;Vdr:{{ asset.Vendor|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Price %}&#10;Price:{{ asset.Price }}{% endif %}{% if asset.Bill_no %}&#10;Bill:{{ asset.Bill_no|string|replace('"', '')|truncate(8, True, '') }}{% endif %}{% if asset.Purchase_date %}&#10;Buy:{{ asset.Purchase_date }}{% endif %}&#10;Exp:{{ asset.expiry_date }}{% if asset.Warranty_period %}&#10;War:{{ asset.Warranty_period|string|replace('"', '')|truncate(8, True, '') }}{% endif %}{% if asset.custodian %}&#10;Cust:{{ asset.custodian|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Department %}&#10;Dept:{{ asset.Department|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Location %}&#10;Loc:{{ asset.Location|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Stock_register_no %}&#10;Reg:{{ asset.Stock_register_no|string|replace('"', '')|truncate(8, True, '') }}{% endif %}" style="margin-bottom: 5px;"></div>
-                                    <div style="display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
-                                        <label style="cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 4px; padding: 4px 8px; background: #e2e8f0; border-radius: 4px; color: #475569;" title="Standard QR Code">
-                                            <input type="checkbox" onchange="toggleNormalQR(this, 'qr-{{ loop.index }}')" style="margin: 0;">
-                                            <span>Normal</span>
-                                        </label>
-                                        
-                                        <input type="text" value="{{ asset.Category_name[0]|upper if asset.Category_name else 'A' }}" maxlength="1" placeholder="A-Z"
-                                               class="qr-letter-input"
-                                               style="width: 30px; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px; font-weight: bold; color: var(--primary-color);"
-                                               oninput="updateQRLetter(this, 'qr-{{ loop.index }}')" title="Type a letter to show in center">
-                                        
-                                        <label style="cursor: pointer; padding: 4px 8px; background: #e2e8f0; border-radius: 4px; color: #475569; display: flex; align-items: center;" title="Upload Custom Logo/Image">
-                                            <i class="fas fa-image"></i>
-                                            <input type="file" accept="image/*" style="display: none;" onchange="updateQRImage(this, 'qr-{{ loop.index }}')">
-                                        </label>
-
-                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.70rem;" onclick="openPrintModal(this, 'single')"><i class="fas fa-print"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr><td colspan="4" style="text-align: center; padding: 20px;">No assets added yet.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="overflow-x-auto -mx-4 md:mx-0">
+                        <div class="inline-block min-w-full md:w-full">
+                            <table class="w-full text-sm border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100">
+                                        <th class="px-3 py-2 text-left w-12"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" class="cursor-pointer"></th>
+                                        <th class="px-3 py-2 text-left">Asset Details</th>
+                                        <th class="hidden md:table-cell px-3 py-2 text-left">Category</th>
+                                        <th class="px-3 py-2 text-center">QR</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for asset in assets %}
+                                    <tr class="border-b border-slate-200 hover:bg-slate-50">
+                                        <td class="px-3 py-2"><input type="checkbox" class="qr-checkbox"></td>
+                                        <td class="px-3 py-2">
+                                            <div class="font-semibold text-slate-800 text-xs md:text-sm">{{ asset.Product_name }}</div>
+                                            <div class="text-xs text-slate-600 font-mono">{{ asset.Qr_code_value }}</div>
+                                            <div class="md:hidden text-xs text-slate-600 mt-1">{{ asset.Category_name }}</div>
+                                        </td>
+                                        <td class="hidden md:table-cell px-3 py-2 text-sm">{{ asset.Category_name }}</td>
+                                        <td class="px-3 py-2 text-center"
+                                            <div class="qr-code-target flex-shrink-0" id="qr-{{ loop.index }}" data-qr="ID:{{ asset.Qr_code_value|string|replace('"', '') }}&#10;Item:{{ asset.Product_name|string|replace('"', '')|truncate(18, True, '') }}&#10;Cat:{{ asset.Category_name|string|replace('"', '')|truncate(12, True, '') }}{% if asset.Manufacturer %}&#10;Mfr:{{ asset.Manufacturer|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Vendor %}&#10;Vdr:{{ asset.Vendor|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Price %}&#10;Price:{{ asset.Price }}{% endif %}{% if asset.Bill_no %}&#10;Bill:{{ asset.Bill_no|string|replace('"', '')|truncate(8, True, '') }}{% endif %}{% if asset.Purchase_date %}&#10;Buy:{{ asset.Purchase_date }}{% endif %}&#10;Exp:{{ asset.expiry_date }}{% if asset.Warranty_period %}&#10;War:{{ asset.Warranty_period|string|replace('"', '')|truncate(8, True, '') }}{% endif %}{% if asset.custodian %}&#10;Cust:{{ asset.custodian|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Department %}&#10;Dept:{{ asset.Department|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Location %}&#10;Loc:{{ asset.Location|string|replace('"', '')|truncate(10, True, '') }}{% endif %}{% if asset.Stock_register_no %}&#10;Reg:{{ asset.Stock_register_no|string|replace('"', '')|truncate(8, True, '') }}{% endif %}" style="margin-bottom: 5px; width: 100% !important; max-width: 160px;"></div>
+                                            <div class="flex items-center justify-center gap-1 flex-wrap text-xs">
+                                                <label class="cursor-pointer flex items-center gap-1 px-2 py-1 bg-slate-200 hover:bg-slate-300 rounded text-slate-700 transition-colors text-xs">
+                                                    <input type="checkbox" onchange="toggleNormalQR(this, 'qr-{{ loop.index }}')" class="w-3 h-3">
+                                                    <span class="hidden md:inline">Normal</span>
+                                                </label>
+                                                <input type="text" value="{{ asset.Category_name[0]|upper if asset.Category_name else 'A' }}" maxlength="1"
+                                                       class="w-6 h-6 text-center border border-slate-300 rounded text-xs font-bold text-blue-600"
+                                                       oninput="updateQRLetter(this, 'qr-{{ loop.index }}')">
+                                                <label class="cursor-pointer px-2 py-1 bg-slate-200 hover:bg-slate-300 rounded text-slate-700 transition-colors">
+                                                    <i class="fas fa-image text-xs"></i>
+                                                    <input type="file" accept="image/*" class="hidden" onchange="updateQRImage(this, 'qr-{{ loop.index }}')">
+                                                </label>
+                                                <button class="bg-slate-600 hover:bg-slate-700 text-white px-2 py-1 rounded text-xs" onclick="openPrintModal(this, 'single')"><i class="fas fa-print"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="4" class="text-center text-slate-500 py-4">No assets added yet.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Expired Assets Section -->
-                <div class="card" id="section-expired" style="display: none;">
-                    <h3>Expired Assets Status</h3>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Asset Name</th>
-                                <th>Expiry Date</th>
-                                <th>Status</th>
-                                <th>Disposition Details</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {% for asset in expired_assets %}
-                        <tr>
-                            <td><strong>{{ asset.Product_name }}</strong></td>
-                            <td>{{ asset.expiry_date }}</td>
-                            <td>
-                                {% if asset.is_sold %}
-                                    <span style="background: #fee2e2; color: #ef4444; padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; border: 1px solid #fecaca;">Sold</span>
+                <div class="bg-white rounded-lg shadow p-4 md:p-6" id="section-expired" style="display: none;">
+                    <h3 class="text-lg md:text-xl font-semibold text-slate-800 mb-4 m-0">Expired Assets Status</h3>
+                    <div class="overflow-x-auto -mx-4 md:mx-0">
+                        <div class="inline-block min-w-full md:w-full">
+                            <table class="w-full text-sm border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100">
+                                        <th class="px-3 py-2 text-left">Asset</th>
+                                        <th class="px-3 py-2 text-left">Expiry</th>
+                                        <th class="px-3 py-2 text-left">Status</th>
+                                        <th class="px-3 py-2 text-left">Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for asset in expired_assets %}
+                                <tr class="border-b border-slate-200 hover:bg-slate-50">
+                                    <td class="px-3 py-2"><strong class="text-slate-800">{{ asset.Product_name }}</strong></td>
+                                    <td class="px-3 py-2 text-slate-600">{{ asset.expiry_date }}</td>
+                                    <td class="px-3 py-2">
+                                        {% if asset.is_sold %}
+                                            <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-semibold border border-red-300">Sold</span>
+                                        {% else %}
+                                            <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold border border-green-300">Stored</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-3 py-2 text-xs text-slate-600">
+                                        {% if asset.is_sold %}
+                                            <div><strong>Buyer:</strong> {{ asset.sold_to }}</div>
+                                            <div><strong>Price:</strong> {{ asset.sale_price }}</div>
+                                        {% else %}
+                                            <i class="fas fa-warehouse"></i> {{ asset.storage_location|default('Stored') }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
                                 {% else %}
-                                    <span style="background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; border: 1px solid #bbf7d0;">Stored</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if asset.is_sold %}
-                                    <div style="font-size: 0.85rem; line-height: 1.5;">
-                                        <div><strong>Buyer:</strong> {{ asset.sold_to }}</div>
-                                        <div><strong>Price:</strong> {{ asset.sale_price }}</div>
-                                        <div><strong>Approved By:</strong> {{ asset.approved_by }}</div>
-                                    </div>
-                                {% else %}
-                                    <div style="font-size: 0.85rem; color: #64748b;">
-                                        <i class="fas fa-warehouse"></i> Stored in {{ asset.storage_location|default('College/Organization') }}
-                                    </div>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="4" style="text-align: center; padding: 20px; color: #666;">No expired assets found.</td></tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                                <tr><td colspan="4" class="text-center text-slate-500 py-4">No expired assets found.</td></tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Feedback / Report Issue -->
-                <div class="card" id="section-feedback">
-                    <h3>Website Feedback</h3>
-                    <form action="/submit-feedback" method="POST" style="display: grid; gap: 15px;">
-                        <textarea name="message" placeholder="Share your experience or report issues with the website..." rows="3" required style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
-                        <div>
-                            <button type="submit" class="btn-secondary">Submit Feedback</button>
-                        </div>
+                <div class="bg-white rounded-lg shadow p-4 md:p-6" id="section-feedback">
+                    <h3 class="text-lg md:text-xl font-semibold text-slate-800 mb-4 m-0">Website Feedback</h3>
+                    <form action="/submit-feedback" method="POST" class="flex flex-col gap-4">
+                        <textarea name="message" placeholder="Share your experience or report issues with the website..." rows="4" required class="px-3 py-2 border border-slate-300 rounded-lg outline-none text-sm resize-none focus:border-indigo-600 focus:shadow-sm focus:shadow-indigo-100 transition-all"></textarea>
+                        <button type="submit" class="bg-slate-600 hover:bg-slate-700 text-white py-2 rounded-lg font-medium transition-colors w-full md:w-auto">Submit Feedback</button>
                     </form>
                 </div>
             </div>
@@ -392,12 +414,12 @@
 </div>
 
 <!-- Print Size Modal -->
-<div id="printSizeModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
-    <div style="background:white;padding:25px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);max-width:400px;width:90%;">
-        <h3 style="margin:0 0 15px 0;color:#1e293b;display:flex;align-items:center;gap:10px;">
-            <i class="fas fa-ruler-combined" style="color:var(--primary-color)"></i> Print Size Settings
+<div id="printSizeModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 transition-all">
+    <div class="bg-white p-4 md:p-6 rounded-xl shadow-2xl max-w-sm w-full">
+        <h3 class="m-0 mb-2 md:mb-3 text-slate-800 font-semibold flex items-center gap-2 text-base md:text-lg">
+            <i class="fas fa-ruler-combined text-indigo-600"></i> <span>Print Size</span>
         </h3>
-        <p style="color:#64748b;font-size:0.9rem;margin-bottom:15px;">Customize the QR code dimensions for printing</p>
+        <p class="text-slate-500 text-xs md:text-sm mb-4">Customize QR code dimensions for printing</p>
         
         <div style="display:flex;gap:15px;align-items:center;margin-bottom:15px;">
             <label style="flex:1;">
@@ -419,19 +441,53 @@
             <button onclick="setPresetSize(8, 8)" class="btn-secondary" style="flex:1;padding:8px;">Large (8cm)</button>
         </div>
         
-        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
-            <button onclick="closePrintModal()" class="btn-secondary" style="padding:10px 20px;">Cancel</button>
-            <button onclick="confirmPrint()" class="btn-primary" style="padding:10px 20px;"><i class="fas fa-print"></i> Print</button>
+        <div class="flex gap-2 md:gap-3 flex-col-reverse md:flex-row items-stretch md:items-center mt-4 md:mt-0">
+            <button onclick="closePrintModal()" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-medium text-sm rounded-lg transition-colors cursor-pointer border-none">Cancel</button>
+            <button onclick="confirmPrint()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg transition-colors cursor-pointer border-none"><i class="fas fa-print"></i> Print</button>
         </div>
     </div>
 </div>
 
 <script>
+    // Mobile Sidebar Toggle
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileSidebar = document.getElementById('mobileSidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileSidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.classList.toggle('hidden');
+        });
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+            mobileSidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+    }
+
+    // Close sidebar when menu item is clicked
+    document.querySelectorAll('.sidebar-menu a').forEach(link => {
+        link.addEventListener('click', () => {
+            mobileSidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+    });
+
+    // Close sidebar on window resize to desktop
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768) {
+            mobileSidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        }
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
         var qrContainers = document.querySelectorAll('.qr-code-target');
         qrContainers.forEach(function(container) {
-            // Find the input associated with this QR code to get the default letter
-            var input = container.parentElement.querySelector('.qr-letter-input');
+            var input = container.parentElement.querySelector('.qr-letter-input') || container.closest('td').querySelector('input[type="text"]:first-of-type');
             var letter = input ? input.value : 'A';
             generateQR(container, letter);
         });
@@ -679,7 +735,8 @@
         checkboxes.forEach(cb => cb.checked = source.checked);
     }
 
-    function showTab(tabName) {
+    function showTab(tabName, event) {
+        if (event) event.preventDefault();
         // Reset active class on sidebar
         document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
         
