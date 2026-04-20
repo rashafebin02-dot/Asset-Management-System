@@ -1,8 +1,11 @@
 # GitHub Language Detection Configuration
 # This tells GitHub how to count languages without affecting your project
 
-# Mark static CSS files as Python (compiled/generated)
-static/css/ linguist-language=Python
+# Mark template HTML files as Python (they're mostly Flask template logic)
+backend/templates/ linguist-language=Python
+
+# Keep CSS visible (it's actual styling code)
+*.css linguist-language=CSS
 
 # Exclude build artifacts and virtual environment
 build/ linguist-generated=true
