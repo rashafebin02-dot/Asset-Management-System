@@ -1,10 +1,10 @@
 # GitHub Language Detection Configuration
 # This tells GitHub how to count languages without affecting your project
 
-# Treat template and styling files as Python for language counting
-*.html linguist-language=Python
-*.css linguist-language=Python
+# Mark static CSS files as Python (compiled/generated)
+static/css/ linguist-language=Python
 
 # Exclude build artifacts and virtual environment
 build/ linguist-generated=true
 venv/ linguist-generated=true
+*.pyc linguist-generated=true
